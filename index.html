@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#070912">
+    <meta name="description" content="YOIN frequency is a simple binaural beat, noise, and timer web audio app.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="YOIN frequency">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>YOIN frequency</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="brand-block">
+          <p class="studio-mark">YOIN studio</p>
+          <h1>YOIN frequency</h1>
+          <p class="tagline">focus, relax, sleep with gentle frequencies</p>
+        </div>
+        <div class="view-switch" role="group" aria-label="Display mode">
+          <button id="fullLayoutButton" type="button" data-layout="full" aria-pressed="true">Full</button>
+          <button id="compactLayoutButton" type="button" data-layout="compact" aria-pressed="false">Compact</button>
+        </div>
+      </header>
+
+      <section class="current-card" aria-labelledby="current-mode-label">
+        <div class="current-topline">
+          <span id="playbackStatus" class="status-pill">停止中</span>
+          <span id="headphoneStatus" class="status-pill subtle">イヤホン推奨</span>
+        </div>
+
+        <div class="breath-wrap" aria-hidden="true">
+          <div id="breathCircle" class="breath-circle"></div>
+        </div>
+
+        <p id="current-mode-label" class="section-kicker">Current mode</p>
+        <h2 id="currentModeName">Focus</h2>
+        <p id="currentModeDescription" class="mode-description">作業・読書・デザイン作業向け</p>
+
+        <dl class="frequency-grid">
+          <div>
+            <dt id="primaryFrequencyLabel">Left</dt>
+            <dd id="leftFrequency">200Hz</dd>
+          </div>
+          <div>
+            <dt id="secondaryFrequencyLabel">Right</dt>
+            <dd id="rightFrequency">214Hz</dd>
+          </div>
+          <div>
+            <dt id="differenceFrequencyLabel">Diff</dt>
+            <dd id="differenceFrequency">14Hz</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="panel controls-panel" aria-labelledby="controls-heading">
+        <div class="panel-heading">
+          <h2 id="controls-heading">Player</h2>
+          <span id="remainingTime" class="panel-note">30:00</span>
+        </div>
+
+        <div class="segmented-control listening-control" role="radiogroup" aria-label="Listening mode">
+          <button id="headphonesModeButton" type="button" data-listening-mode="headphones" aria-pressed="true">Headphones</button>
+          <button id="speakerModeButton" type="button" data-listening-mode="speaker" aria-pressed="false">Speaker</button>
+        </div>
+
+        <div class="transport-row">
+          <button id="playButton" class="primary-button" type="button">PLAY</button>
+          <button id="stopButton" class="secondary-button" type="button">STOP</button>
+        </div>
+
+        <div class="slider-group">
+          <label for="masterVolume">
+            <span>Master</span>
+            <output id="masterVolumeValue" for="masterVolume">70%</output>
+          </label>
+          <input id="masterVolume" type="range" min="0" max="100" step="1" value="70">
+        </div>
+
+        <div class="slider-group">
+          <label for="toneVolume">
+            <span>Frequency</span>
+            <output id="toneVolumeValue" for="toneVolume">24%</output>
+          </label>
+          <input id="toneVolume" type="range" min="0" max="100" step="1" value="24">
+        </div>
+
+        <div class="slider-group">
+          <label for="noiseVolume">
+            <span>Noise</span>
+            <output id="noiseVolumeValue" for="noiseVolume">18%</output>
+          </label>
+          <input id="noiseVolume" type="range" min="0" max="100" step="1" value="18">
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="mode-heading">
+        <div class="panel-heading">
+          <h2 id="mode-heading">Mode</h2>
+          <span id="noiseLabel" class="panel-note">Pink noise</span>
+        </div>
+        <div id="modeGrid" class="mode-grid" role="list"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="noise-heading">
+        <div class="panel-heading">
+          <h2 id="noise-heading">Noise type</h2>
+          <span class="panel-note">Mixも選択可</span>
+        </div>
+        <div class="segmented-control" role="radiogroup" aria-label="Noise type">
+          <button id="pinkNoiseButton" type="button" data-noise="pink" aria-pressed="true">Pink</button>
+          <button id="brownNoiseButton" type="button" data-noise="brown" aria-pressed="false">Brown</button>
+          <button id="mixedNoiseButton" type="button" data-noise="mixed" aria-pressed="false">Mix</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="timer-heading">
+        <div class="panel-heading">
+          <h2 id="timer-heading">Timer</h2>
+          <span class="panel-note">自動フェードアウト</span>
+        </div>
+        <div id="timerOptions" class="timer-grid" role="radiogroup" aria-label="Timer"></div>
+      </section>
+
+      <footer class="notice">
+        小さめの音量で使用してください。バイノーラルビートはイヤホン推奨です。運転中や危険を伴う作業中の使用は避けてください。効果には個人差があります。
+      </footer>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
