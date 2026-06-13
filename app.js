@@ -3,7 +3,7 @@
 
   const HADOU_2950_SECONDS = (29 * 60) + 50;
   const HADOU_2950_MINUTES = HADOU_2950_SECONDS / 60;
-  const HADOU_2950_CARRIER_FREQUENCY = 6000;
+  const HADOU_2950_CARRIER_FREQUENCY = 200;
   const HADOU_2950_PULSE_TIMELINE = [
     { time: 0, rate: 3.79 },
     { time: 60, rate: 2.32 },
