@@ -1,6 +1,20 @@
 (() => {
   "use strict";
 
+  const HADOU_2950_SECONDS = (29 * 60) + 50;
+  const HADOU_2950_MINUTES = HADOU_2950_SECONDS / 60;
+  const HADOU_2950_TIMELINE = [
+    { time: 0, frequency: 5984 },
+    { time: 5 * 60, frequency: 5985.6 },
+    { time: 10 * 60, frequency: 5987.3 },
+    { time: 15 * 60, frequency: 5987.5 },
+    { time: 20 * 60, frequency: 5988.8 },
+    { time: (24 * 60) + 30, frequency: 5985.5 },
+    { time: 25 * 60, frequency: 5993.4 },
+    { time: 26 * 60, frequency: 5997.8 },
+    { time: HADOU_2950_SECONDS, frequency: 5998.1 }
+  ];
+
   const MODES = {
     focus: {
       name: "Focus",
@@ -52,6 +66,19 @@
       toneVolume: 20,
       noiseVolume: 18
     },
+    hadou2950: {
+      name: "ビジネス",
+      description: "解析音声の00:00-29:50だけを再現する6kHzカーブ",
+      left: HADOU_2950_TIMELINE[0].frequency,
+      right: HADOU_2950_TIMELINE[0].frequency,
+      difference: 0,
+      frequencyTimeline: HADOU_2950_TIMELINE,
+      durationSeconds: HADOU_2950_SECONDS,
+      timerMinutes: HADOU_2950_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
     noiseOnly: {
       name: "Noise Only",
       description: "周波数なしでノイズだけ流すモード",
@@ -66,6 +93,7 @@
 
   const TIMER_OPTIONS = [
     { label: "15分", minutes: 15 },
+    { label: "29:50", minutes: HADOU_2950_MINUTES },
     { label: "30分", minutes: 30 },
     { label: "60分", minutes: 60 },
     { label: "90分", minutes: 90 },
@@ -294,6 +322,12 @@
       return `${formatNoiseName(mode.noise)} noise`;
     }
 
+    if (mode.frequencyTimeline) {
+      const first = mode.frequencyTimeline[0];
+      const last = mode.frequencyTimeline[mode.frequencyTimeline.length - 1];
+      return `${formatHz(first.frequency)} -> ${formatHz(last.frequency)} / ${formatDurationSeconds(mode.durationSeconds)}`;
+    }
+
     if (state.listeningMode === "speaker") {
       return `${formatHz(mode.left)} mono / pulse ${formatHz(mode.difference)}`;
     }
@@ -332,6 +366,9 @@
     state.toneVolume = MODES[modeKey].toneVolume;
     state.noiseVolume = MODES[modeKey].noiseVolume;
     state.noiseType = MODES[modeKey].noise;
+    if (MODES[modeKey].timerMinutes) {
+      state.timerMinutes = MODES[modeKey].timerMinutes;
+    }
     saveState();
     applyStateToView();
 
@@ -506,8 +543,14 @@
 
     leftOscillator.type = "sine";
     rightOscillator.type = "sine";
-    leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
-    rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
+    if (mode.frequencyTimeline) {
+      const rightOffset = mode.right - mode.left;
+      scheduleFrequencyTimeline(leftOscillator.frequency, mode.frequencyTimeline, context.currentTime, 0);
+      scheduleFrequencyTimeline(rightOscillator.frequency, mode.frequencyTimeline, context.currentTime, rightOffset);
+    } else {
+      leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
+      rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
+    }
     leftGain.gain.setValueAtTime(1, context.currentTime);
     rightGain.gain.setValueAtTime(1, context.currentTime);
 
@@ -525,7 +568,11 @@
     const modulationGain = context.createGain();
 
     carrier.type = "sine";
-    carrier.frequency.setValueAtTime(mode.left, context.currentTime);
+    if (mode.frequencyTimeline) {
+      scheduleFrequencyTimeline(carrier.frequency, mode.frequencyTimeline, context.currentTime, 0);
+    } else {
+      carrier.frequency.setValueAtTime(mode.left, context.currentTime);
+    }
     modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
 
     carrier.connect(modulationGain);
@@ -543,6 +590,19 @@
       lfoDepth.connect(modulationGain.gain);
       sources.push(lfo);
     }
+  }
+
+  function scheduleFrequencyTimeline(param, timeline, now, offset) {
+    if (!timeline.length) {
+      return;
+    }
+
+    param.cancelScheduledValues(now);
+    param.setValueAtTime(timeline[0].frequency + offset, now);
+
+    timeline.slice(1).forEach((point) => {
+      param.linearRampToValueAtTime(point.frequency + offset, now + point.time);
+    });
   }
 
   function cleanupGraph(targetGraph) {
@@ -727,12 +787,25 @@
     elements.body.classList.toggle("is-speaker-mode", isSpeakerMode);
     elements.currentModeName.textContent = mode.name;
     elements.currentModeDescription.textContent = mode.description;
-    elements.primaryFrequencyLabel.textContent = isSpeakerMode ? "Tone" : "Left";
-    elements.secondaryFrequencyLabel.textContent = isSpeakerMode ? "Output" : "Right";
-    elements.differenceFrequencyLabel.textContent = isSpeakerMode ? "Pulse" : "Diff";
-    elements.leftFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.left);
-    elements.rightFrequency.textContent = isNoiseOnly ? "--" : isSpeakerMode ? "Mono" : formatHz(mode.right);
-    elements.differenceFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.difference);
+
+    if (mode.frequencyTimeline) {
+      const first = mode.frequencyTimeline[0];
+      const last = mode.frequencyTimeline[mode.frequencyTimeline.length - 1];
+      elements.primaryFrequencyLabel.textContent = "Curve";
+      elements.secondaryFrequencyLabel.textContent = "Output";
+      elements.differenceFrequencyLabel.textContent = "Length";
+      elements.leftFrequency.textContent = `${formatHz(first.frequency)} -> ${formatHz(last.frequency)}`;
+      elements.rightFrequency.textContent = isSpeakerMode ? "Mono" : "L/R";
+      elements.differenceFrequency.textContent = formatDurationSeconds(mode.durationSeconds);
+    } else {
+      elements.primaryFrequencyLabel.textContent = isSpeakerMode ? "Tone" : "Left";
+      elements.secondaryFrequencyLabel.textContent = isSpeakerMode ? "Output" : "Right";
+      elements.differenceFrequencyLabel.textContent = isSpeakerMode ? "Pulse" : "Diff";
+      elements.leftFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.left);
+      elements.rightFrequency.textContent = isNoiseOnly ? "--" : isSpeakerMode ? "Mono" : formatHz(mode.right);
+      elements.differenceFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.difference);
+    }
+
     elements.noiseLabel.textContent = `${formatNoiseName(state.noiseType)} noise`;
     elements.playbackStatus.textContent = state.isPlaying ? "再生中" : isStopping ? "停止中" : "停止中";
     elements.headphoneStatus.textContent = isNoiseOnly
@@ -809,6 +882,17 @@
 
     const rounded = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
     return `${rounded}Hz`;
+  }
+
+  function formatDurationSeconds(seconds) {
+    if (!seconds) {
+      return "--";
+    }
+
+    const safeSeconds = Math.max(0, Math.round(seconds));
+    const minutes = Math.floor(safeSeconds / 60);
+    const remainingSeconds = safeSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
   }
 
   function formatNoiseName(noiseType) {
