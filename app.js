@@ -33,6 +33,51 @@
     { time: 29 * 60, rate: 10.61 },
     { time: HADOU_2950_SECONDS, rate: 10.61 }
   ];
+  const CREATIVE_SECONDS = 20 * 60;
+  const CREATIVE_MINUTES = CREATIVE_SECONDS / 60;
+  const CREATIVE_PULSE_TIMELINE = [
+    { time: 0, rate: 7.25 },
+    { time: 30, rate: 8.5 },
+    { time: 60, rate: 7.43 },
+    { time: 90, rate: 8.93 },
+    { time: 120, rate: 10.17 },
+    { time: 150, rate: 2.53 },
+    { time: 180, rate: 8.87 },
+    { time: 210, rate: 10.57 },
+    { time: 240, rate: 7.87 },
+    { time: 270, rate: 7.37 },
+    { time: 300, rate: 6.83 },
+    { time: 330, rate: 6.37 },
+    { time: 360, rate: 5.87 },
+    { time: 390, rate: 5.33 },
+    { time: 420, rate: 4.83 },
+    { time: 450, rate: 4.37 },
+    { time: 480, rate: 3.93 },
+    { time: 510, rate: 3.67 },
+    { time: 540, rate: 3.43 },
+    { time: 570, rate: 3.17 },
+    { time: 600, rate: 9 },
+    { time: 630, rate: 9 },
+    { time: 660, rate: 3 },
+    { time: 690, rate: 3 },
+    { time: 720, rate: 3 },
+    { time: 750, rate: 9 },
+    { time: 780, rate: 9 },
+    { time: 810, rate: 9 },
+    { time: 840, rate: 9 },
+    { time: 870, rate: 9 },
+    { time: 900, rate: 3 },
+    { time: 930, rate: 9 },
+    { time: 960, rate: 9 },
+    { time: 990, rate: 9 },
+    { time: 1020, rate: 9 },
+    { time: 1050, rate: 9 },
+    { time: 1080, rate: 11.7 },
+    { time: 1110, rate: 2.87 },
+    { time: 1140, rate: 3.77 },
+    { time: 1170, rate: 4.34 },
+    { time: CREATIVE_SECONDS, rate: 4.34 }
+  ];
 
   const MODES = {
     focus: {
@@ -98,6 +143,19 @@
       toneVolume: 10,
       noiseVolume: 14
     },
+    creative: {
+      name: "クリエイティブ",
+      description: "解析音声の30:00-50:00のトトト間隔を再現",
+      left: HADOU_2950_CARRIER_FREQUENCY,
+      right: HADOU_2950_CARRIER_FREQUENCY,
+      difference: 0,
+      pulseTimeline: CREATIVE_PULSE_TIMELINE,
+      durationSeconds: CREATIVE_SECONDS,
+      timerMinutes: CREATIVE_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
     noiseOnly: {
       name: "Noise Only",
       description: "周波数なしでノイズだけ流すモード",
@@ -112,6 +170,7 @@
 
   const TIMER_OPTIONS = [
     { label: "15分", minutes: 15 },
+    { label: "20分", minutes: 20 },
     { label: "29:50", minutes: HADOU_2950_MINUTES },
     { label: "30分", minutes: 30 },
     { label: "60分", minutes: 60 },
