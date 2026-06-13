@@ -221,6 +221,7 @@
   const PULSE_GATE_BASE = 0.5;
   const PULSE_GATE_DEPTH = 0.45;
   const PULSE_GATE_SMOOTHING_HZ = 32;
+  const PULSE_TIMELINE_LOOKAHEAD_CYCLES = 3;
   const NORMAL_FADE_SECONDS = 1.2;
   const TIMER_FADE_SECONDS = 5;
 
@@ -613,6 +614,7 @@
     const toneGain = context.createGain();
     const noiseGain = context.createGain();
     const sources = [];
+    const cleanupTasks = [];
 
     masterGain.gain.setValueAtTime(0, context.currentTime);
     toneGain.gain.setValueAtTime(0, context.currentTime);
@@ -624,9 +626,9 @@
 
     if (mode.left !== null && mode.right !== null && state.toneVolume > 0) {
       if (state.listeningMode === "speaker") {
-        createSpeakerTone(context, mode, toneGain, sources);
+        createSpeakerTone(context, mode, toneGain, sources, cleanupTasks);
       } else {
-        createHeadphoneTone(context, mode, toneGain, sources);
+        createHeadphoneTone(context, mode, toneGain, sources, cleanupTasks);
       }
     }
 
@@ -643,11 +645,12 @@
       masterGain,
       toneGain,
       noiseGain,
-      sources
+      sources,
+      cleanupTasks
     };
   }
 
-  function createHeadphoneTone(context, mode, destination, sources) {
+  function createHeadphoneTone(context, mode, destination, sources, cleanupTasks) {
     const merger = context.createChannelMerger(2);
     const leftOscillator = context.createOscillator();
     const rightOscillator = context.createOscillator();
@@ -662,7 +665,7 @@
     rightGain.gain.setValueAtTime(1, context.currentTime);
 
     if (mode.pulseTimeline) {
-      applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources);
+      applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources, cleanupTasks);
     }
 
     leftOscillator.connect(leftGain);
@@ -674,7 +677,7 @@
     sources.push(leftOscillator, rightOscillator);
   }
 
-  function createSpeakerTone(context, mode, destination, sources) {
+  function createSpeakerTone(context, mode, destination, sources, cleanupTasks) {
     const carrier = context.createOscillator();
     const modulationGain = context.createGain();
 
@@ -684,7 +687,7 @@
 
     if (mode.pulseTimeline) {
       modulationGain.gain.setValueAtTime(PULSE_GATE_BASE, context.currentTime);
-      applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources);
+      applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
     }
 
     carrier.connect(modulationGain);
@@ -704,13 +707,14 @@
     }
   }
 
-  function applyPulseTimeline(context, targets, timeline, sources) {
+  function applyPulseTimeline(context, targets, timeline, sources, cleanupTasks) {
     const lfo = context.createOscillator();
     const lfoDepth = context.createGain();
     const lfoSmoother = context.createBiquadFilter();
 
     lfo.type = "square";
-    schedulePulseTimeline(lfo.frequency, timeline, context.currentTime);
+    const cleanupSchedule = scheduleLoopingPulseTimeline(lfo.frequency, timeline, context);
+    cleanupTasks.push(cleanupSchedule);
     lfoDepth.gain.setValueAtTime(PULSE_GATE_DEPTH, context.currentTime);
     lfoSmoother.type = "lowpass";
     lfoSmoother.frequency.setValueAtTime(PULSE_GATE_SMOOTHING_HZ, context.currentTime);
@@ -731,10 +735,49 @@
     }
 
     param.cancelScheduledValues(now);
-    param.setValueAtTime(timeline[0].rate, now);
+    schedulePulseTimelineCycle(param, timeline, now);
+  }
+
+  function scheduleLoopingPulseTimeline(param, timeline, context) {
+    if (!timeline.length) {
+      return () => {};
+    }
+
+    const duration = timeline[timeline.length - 1].time;
+    const startTime = context.currentTime;
+
+    if (!duration) {
+      param.cancelScheduledValues(startTime);
+      param.setValueAtTime(timeline[0].rate, startTime);
+      return () => {};
+    }
+
+    let scheduledCycle = -1;
+    const scheduleAhead = () => {
+      const elapsed = Math.max(0, context.currentTime - startTime);
+      const currentCycle = Math.floor(elapsed / duration);
+      const targetCycle = currentCycle + PULSE_TIMELINE_LOOKAHEAD_CYCLES;
+
+      for (let cycle = scheduledCycle + 1; cycle <= targetCycle; cycle += 1) {
+        schedulePulseTimelineCycle(param, timeline, startTime + (cycle * duration));
+      }
+
+      scheduledCycle = Math.max(scheduledCycle, targetCycle);
+    };
+
+    param.cancelScheduledValues(startTime);
+    scheduleAhead();
+
+    const refreshMilliseconds = Math.min(Math.max((duration * 1000) / 2, 10000), 60000);
+    const refreshTimer = window.setInterval(scheduleAhead, refreshMilliseconds);
+    return () => window.clearInterval(refreshTimer);
+  }
+
+  function schedulePulseTimelineCycle(param, timeline, startTime) {
+    param.setValueAtTime(timeline[0].rate, startTime);
 
     timeline.slice(1).forEach((point) => {
-      param.linearRampToValueAtTime(point.rate, now + point.time);
+      param.linearRampToValueAtTime(point.rate, startTime + point.time);
     });
   }
 
@@ -742,6 +785,14 @@
     if (!targetGraph) {
       return;
     }
+
+    targetGraph.cleanupTasks.forEach((task) => {
+      try {
+        task();
+      } catch {
+        // Ignore cleanup races from quick UI changes.
+      }
+    });
 
     targetGraph.sources.forEach((source) => {
       try {
