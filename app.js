@@ -166,7 +166,7 @@
     },
     hadou2950: {
       name: "Business",
-      description: "解析音声の00:00-29:50のトトト間隔を再現",
+      description: "ビジネス能力の向上",
       left: HADOU_2950_CARRIER_FREQUENCY,
       right: HADOU_2950_CARRIER_FREQUENCY,
       difference: 0,
@@ -179,7 +179,7 @@
     },
     creative: {
       name: "Creative",
-      description: "解析音声の30:00-50:00のトトト間隔を再現",
+      description: "クリエイティブ能力の向上",
       left: HADOU_2950_CARRIER_FREQUENCY,
       right: HADOU_2950_CARRIER_FREQUENCY,
       difference: 0,
