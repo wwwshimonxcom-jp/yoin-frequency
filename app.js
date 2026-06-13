@@ -3,16 +3,35 @@
 
   const HADOU_2950_SECONDS = (29 * 60) + 50;
   const HADOU_2950_MINUTES = HADOU_2950_SECONDS / 60;
-  const HADOU_2950_TIMELINE = [
-    { time: 0, frequency: 5984 },
-    { time: 5 * 60, frequency: 5985.6 },
-    { time: 10 * 60, frequency: 5987.3 },
-    { time: 15 * 60, frequency: 5987.5 },
-    { time: 20 * 60, frequency: 5988.8 },
-    { time: (24 * 60) + 30, frequency: 5985.5 },
-    { time: 25 * 60, frequency: 5993.4 },
-    { time: 26 * 60, frequency: 5997.8 },
-    { time: HADOU_2950_SECONDS, frequency: 5998.1 }
+  const HADOU_2950_CARRIER_FREQUENCY = 6000;
+  const HADOU_2950_PULSE_TIMELINE = [
+    { time: 0, rate: 3.79 },
+    { time: 60, rate: 2.32 },
+    { time: 2 * 60, rate: 8.32 },
+    { time: 3 * 60, rate: 6.05 },
+    { time: 4 * 60, rate: 9.25 },
+    { time: 5 * 60, rate: 7.8 },
+    { time: 10 * 60, rate: 5.63 },
+    { time: 11 * 60, rate: 6.55 },
+    { time: 12 * 60, rate: 8.83 },
+    { time: 13 * 60, rate: 5.85 },
+    { time: 14 * 60, rate: 2.68 },
+    { time: 15 * 60, rate: 4.53 },
+    { time: 16 * 60, rate: 10.65 },
+    { time: 17 * 60, rate: 10.47 },
+    { time: 18 * 60, rate: 2.5 },
+    { time: 19 * 60, rate: 6.52 },
+    { time: 20 * 60, rate: 2.32 },
+    { time: 21 * 60, rate: 7.97 },
+    { time: 22 * 60, rate: 2.35 },
+    { time: 23 * 60, rate: 8.97 },
+    { time: 24 * 60, rate: 10.65 },
+    { time: 25 * 60, rate: 8.05 },
+    { time: 26 * 60, rate: 8.83 },
+    { time: 27 * 60, rate: 6.82 },
+    { time: 28 * 60, rate: 7.58 },
+    { time: 29 * 60, rate: 10.61 },
+    { time: HADOU_2950_SECONDS, rate: 10.61 }
   ];
 
   const MODES = {
@@ -68,11 +87,11 @@
     },
     hadou2950: {
       name: "ビジネス",
-      description: "解析音声の00:00-29:50だけを再現する6kHzカーブ",
-      left: HADOU_2950_TIMELINE[0].frequency,
-      right: HADOU_2950_TIMELINE[0].frequency,
+      description: "解析音声の00:00-29:50のトトト間隔を再現",
+      left: HADOU_2950_CARRIER_FREQUENCY,
+      right: HADOU_2950_CARRIER_FREQUENCY,
       difference: 0,
-      frequencyTimeline: HADOU_2950_TIMELINE,
+      pulseTimeline: HADOU_2950_PULSE_TIMELINE,
       durationSeconds: HADOU_2950_SECONDS,
       timerMinutes: HADOU_2950_MINUTES,
       noise: "pink",
@@ -106,6 +125,9 @@
   const NOISE_GAIN_MAX = 0.13;
   const SPEAKER_MODULATION_BASE = 0.56;
   const SPEAKER_MODULATION_DEPTH = 0.18;
+  const PULSE_GATE_BASE = 0.5;
+  const PULSE_GATE_DEPTH = 0.45;
+  const PULSE_GATE_SMOOTHING_HZ = 32;
   const NORMAL_FADE_SECONDS = 1.2;
   const TIMER_FADE_SECONDS = 5;
 
@@ -322,10 +344,8 @@
       return `${formatNoiseName(mode.noise)} noise`;
     }
 
-    if (mode.frequencyTimeline) {
-      const first = mode.frequencyTimeline[0];
-      const last = mode.frequencyTimeline[mode.frequencyTimeline.length - 1];
-      return `${formatHz(first.frequency)} -> ${formatHz(last.frequency)} / ${formatDurationSeconds(mode.durationSeconds)}`;
+    if (mode.pulseTimeline) {
+      return `${formatHz(mode.left)} / pulse ${formatPulseRange(mode.pulseTimeline)} / ${formatDurationSeconds(mode.durationSeconds)}`;
     }
 
     if (state.listeningMode === "speaker") {
@@ -543,16 +563,14 @@
 
     leftOscillator.type = "sine";
     rightOscillator.type = "sine";
-    if (mode.frequencyTimeline) {
-      const rightOffset = mode.right - mode.left;
-      scheduleFrequencyTimeline(leftOscillator.frequency, mode.frequencyTimeline, context.currentTime, 0);
-      scheduleFrequencyTimeline(rightOscillator.frequency, mode.frequencyTimeline, context.currentTime, rightOffset);
-    } else {
-      leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
-      rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
-    }
+    leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
+    rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
     leftGain.gain.setValueAtTime(1, context.currentTime);
     rightGain.gain.setValueAtTime(1, context.currentTime);
+
+    if (mode.pulseTimeline) {
+      applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources);
+    }
 
     leftOscillator.connect(leftGain);
     rightOscillator.connect(rightGain);
@@ -568,18 +586,19 @@
     const modulationGain = context.createGain();
 
     carrier.type = "sine";
-    if (mode.frequencyTimeline) {
-      scheduleFrequencyTimeline(carrier.frequency, mode.frequencyTimeline, context.currentTime, 0);
-    } else {
-      carrier.frequency.setValueAtTime(mode.left, context.currentTime);
-    }
+    carrier.frequency.setValueAtTime(mode.left, context.currentTime);
     modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
+
+    if (mode.pulseTimeline) {
+      modulationGain.gain.setValueAtTime(PULSE_GATE_BASE, context.currentTime);
+      applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources);
+    }
 
     carrier.connect(modulationGain);
     modulationGain.connect(destination);
     sources.push(carrier);
 
-    if (mode.difference > 0) {
+    if (mode.difference > 0 && !mode.pulseTimeline) {
       const lfo = context.createOscillator();
       const lfoDepth = context.createGain();
 
@@ -592,16 +611,37 @@
     }
   }
 
-  function scheduleFrequencyTimeline(param, timeline, now, offset) {
+  function applyPulseTimeline(context, targets, timeline, sources) {
+    const lfo = context.createOscillator();
+    const lfoDepth = context.createGain();
+    const lfoSmoother = context.createBiquadFilter();
+
+    lfo.type = "square";
+    schedulePulseTimeline(lfo.frequency, timeline, context.currentTime);
+    lfoDepth.gain.setValueAtTime(PULSE_GATE_DEPTH, context.currentTime);
+    lfoSmoother.type = "lowpass";
+    lfoSmoother.frequency.setValueAtTime(PULSE_GATE_SMOOTHING_HZ, context.currentTime);
+
+    targets.forEach((target) => {
+      target.setValueAtTime(PULSE_GATE_BASE, context.currentTime);
+      lfoSmoother.connect(target);
+    });
+
+    lfo.connect(lfoDepth);
+    lfoDepth.connect(lfoSmoother);
+    sources.push(lfo);
+  }
+
+  function schedulePulseTimeline(param, timeline, now) {
     if (!timeline.length) {
       return;
     }
 
     param.cancelScheduledValues(now);
-    param.setValueAtTime(timeline[0].frequency + offset, now);
+    param.setValueAtTime(timeline[0].rate, now);
 
     timeline.slice(1).forEach((point) => {
-      param.linearRampToValueAtTime(point.frequency + offset, now + point.time);
+      param.linearRampToValueAtTime(point.rate, now + point.time);
     });
   }
 
@@ -788,15 +828,13 @@
     elements.currentModeName.textContent = mode.name;
     elements.currentModeDescription.textContent = mode.description;
 
-    if (mode.frequencyTimeline) {
-      const first = mode.frequencyTimeline[0];
-      const last = mode.frequencyTimeline[mode.frequencyTimeline.length - 1];
-      elements.primaryFrequencyLabel.textContent = "Curve";
+    if (mode.pulseTimeline) {
+      elements.primaryFrequencyLabel.textContent = "Tone";
       elements.secondaryFrequencyLabel.textContent = "Output";
-      elements.differenceFrequencyLabel.textContent = "Length";
-      elements.leftFrequency.textContent = `${formatHz(first.frequency)} -> ${formatHz(last.frequency)}`;
+      elements.differenceFrequencyLabel.textContent = "Pulse";
+      elements.leftFrequency.textContent = formatHz(mode.left);
       elements.rightFrequency.textContent = isSpeakerMode ? "Mono" : "L/R";
-      elements.differenceFrequency.textContent = formatDurationSeconds(mode.durationSeconds);
+      elements.differenceFrequency.textContent = formatPulseRange(mode.pulseTimeline);
     } else {
       elements.primaryFrequencyLabel.textContent = isSpeakerMode ? "Tone" : "Left";
       elements.secondaryFrequencyLabel.textContent = isSpeakerMode ? "Output" : "Right";
@@ -882,6 +920,21 @@
 
     const rounded = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
     return `${rounded}Hz`;
+  }
+
+  function formatPulseRange(timeline) {
+    if (!timeline || !timeline.length) {
+      return "--";
+    }
+
+    const rates = timeline.map((point) => point.rate);
+    const min = Math.min(...rates);
+    const max = Math.max(...rates);
+    return `${formatNumber(min)}-${formatNumber(max)}Hz`;
+  }
+
+  function formatNumber(value) {
+    return value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
   function formatDurationSeconds(seconds) {
