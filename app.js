@@ -67,6 +67,69 @@
     { time: 1770, rate: 4.37 },
     { time: HADOU_2950_SECONDS, rate: 4.37 }
   ];
+  const HADOU_2950_PITCH_TIMELINE = [
+    { time: 0, pitch: 71.56 },
+    { time: 30, pitch: 99.9 },
+    { time: 60, pitch: 142.02 },
+    { time: 90, pitch: 72.35 },
+    { time: 120, pitch: 145.01 },
+    { time: 150, pitch: 145.1 },
+    { time: 180, pitch: 145.12 },
+    { time: 210, pitch: 145.17 },
+    { time: 240, pitch: 145.17 },
+    { time: 270, pitch: 145.16 },
+    { time: 300, pitch: 145.22 },
+    { time: 330, pitch: 145.19 },
+    { time: 360, pitch: 145.14 },
+    { time: 390, pitch: 145.27 },
+    { time: 420, pitch: 145.27 },
+    { time: 450, pitch: 145.28 },
+    { time: 480, pitch: 145.33 },
+    { time: 510, pitch: 145.28 },
+    { time: 540, pitch: 145.32 },
+    { time: 570, pitch: 145.29 },
+    { time: 600, pitch: 145.37 },
+    { time: 630, pitch: 145.56 },
+    { time: 660, pitch: 145.49 },
+    { time: 690, pitch: 145.55 },
+    { time: 720, pitch: 145.56 },
+    { time: 750, pitch: 145.48 },
+    { time: 780, pitch: 145.48 },
+    { time: 810, pitch: 145.43 },
+    { time: 840, pitch: 145.44 },
+    { time: 870, pitch: 145.52 },
+    { time: 900, pitch: 77.6 },
+    { time: 930, pitch: 145.55 },
+    { time: 960, pitch: 145.56 },
+    { time: 990, pitch: 227.9 },
+    { time: 1020, pitch: 99.95 },
+    { time: 1050, pitch: 97.29 },
+    { time: 1080, pitch: 177.09 },
+    { time: 1110, pitch: 100.21 },
+    { time: 1140, pitch: 95.01 },
+    { time: 1170, pitch: 100.64 },
+    { time: 1200, pitch: 100.35 },
+    { time: 1230, pitch: 100.53 },
+    { time: 1260, pitch: 100.79 },
+    { time: 1290, pitch: 100.68 },
+    { time: 1320, pitch: 100.43 },
+    { time: 1350, pitch: 100.15 },
+    { time: 1380, pitch: 100.24 },
+    { time: 1410, pitch: 100.51 },
+    { time: 1440, pitch: 100.17 },
+    { time: 1470, pitch: 100.22 },
+    { time: 1500, pitch: 75.44 },
+    { time: 1530, pitch: 75.69 },
+    { time: 1560, pitch: 94.82 },
+    { time: 1590, pitch: 105.51 },
+    { time: 1620, pitch: 68.32 },
+    { time: 1650, pitch: 96.57 },
+    { time: 1680, pitch: 75.21 },
+    { time: 1710, pitch: 96.61 },
+    { time: 1740, pitch: 96.4 },
+    { time: 1770, pitch: 96.66 },
+    { time: HADOU_2950_SECONDS, pitch: 96.66 }
+  ];
   const CREATIVE_SECONDS = 20 * 60;
   const CREATIVE_MINUTES = CREATIVE_SECONDS / 60;
   const CREATIVE_PULSE_TIMELINE = [
@@ -111,6 +174,49 @@
     { time: 1140, rate: 3.77 },
     { time: 1170, rate: 4.34 },
     { time: CREATIVE_SECONDS, rate: 4.34 }
+  ];
+  const CREATIVE_PITCH_TIMELINE = [
+    { time: 0, pitch: 75.46 },
+    { time: 30, pitch: 100.08 },
+    { time: 60, pitch: 99.89 },
+    { time: 90, pitch: 99.96 },
+    { time: 120, pitch: 69.36 },
+    { time: 150, pitch: 100.04 },
+    { time: 180, pitch: 69.31 },
+    { time: 210, pitch: 100.25 },
+    { time: 240, pitch: 65.29 },
+    { time: 270, pitch: 100.22 },
+    { time: 300, pitch: 100.4 },
+    { time: 330, pitch: 100.58 },
+    { time: 360, pitch: 100.49 },
+    { time: 390, pitch: 172.82 },
+    { time: 420, pitch: 69.4 },
+    { time: 450, pitch: 100.34 },
+    { time: 480, pitch: 100.33 },
+    { time: 510, pitch: 105.57 },
+    { time: 540, pitch: 100.74 },
+    { time: 570, pitch: 100.74 },
+    { time: 600, pitch: 125.1 },
+    { time: 630, pitch: 123.25 },
+    { time: 660, pitch: 100.36 },
+    { time: 690, pitch: 68 },
+    { time: 720, pitch: 100.51 },
+    { time: 750, pitch: 73.36 },
+    { time: 780, pitch: 100.69 },
+    { time: 810, pitch: 100.52 },
+    { time: 840, pitch: 100.2 },
+    { time: 870, pitch: 100.15 },
+    { time: 900, pitch: 225.51 },
+    { time: 930, pitch: 238.69 },
+    { time: 960, pitch: 163.69 },
+    { time: 990, pitch: 240.06 },
+    { time: 1020, pitch: 225.52 },
+    { time: 1050, pitch: 100.45 },
+    { time: 1080, pitch: 101.03 },
+    { time: 1110, pitch: 69.05 },
+    { time: 1140, pitch: 100.13 },
+    { time: 1170, pitch: 96.58 },
+    { time: CREATIVE_SECONDS, pitch: 96.58 }
   ];
 
   const MODES = {
@@ -177,12 +283,40 @@
       toneVolume: 10,
       noiseVolume: 14
     },
+    hadou2950Pitch: {
+      name: "Business Pitch",
+      description: "ビジネス能力の向上",
+      left: HADOU_2950_PITCH_TIMELINE[0].pitch,
+      right: HADOU_2950_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: HADOU_2950_PITCH_TIMELINE,
+      pulseTimeline: HADOU_2950_PULSE_TIMELINE,
+      durationSeconds: HADOU_2950_SECONDS,
+      timerMinutes: HADOU_2950_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
     creative: {
       name: "Creative",
       description: "クリエイティブ能力の向上",
       left: HADOU_2950_CARRIER_FREQUENCY,
       right: HADOU_2950_CARRIER_FREQUENCY,
       difference: 0,
+      pulseTimeline: CREATIVE_PULSE_TIMELINE,
+      durationSeconds: CREATIVE_SECONDS,
+      timerMinutes: CREATIVE_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
+    creativePitch: {
+      name: "Creative Pitch",
+      description: "クリエイティブ能力の向上",
+      left: CREATIVE_PITCH_TIMELINE[0].pitch,
+      right: CREATIVE_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: CREATIVE_PITCH_TIMELINE,
       pulseTimeline: CREATIVE_PULSE_TIMELINE,
       durationSeconds: CREATIVE_SECONDS,
       timerMinutes: CREATIVE_MINUTES,
@@ -439,7 +573,8 @@
     }
 
     if (mode.pulseTimeline) {
-      return `${formatHz(mode.left)} / pulse ${formatPulseRange(mode.pulseTimeline)} / ${formatDurationSeconds(mode.durationSeconds)}`;
+      const toneLabel = mode.pitchTimeline ? `pitch ${formatPitchRange(mode.pitchTimeline)}` : formatHz(mode.left);
+      return `${toneLabel} / pulse ${formatPulseRange(mode.pulseTimeline)} / ${formatDurationSeconds(mode.durationSeconds)}`;
     }
 
     if (state.listeningMode === "speaker") {
@@ -664,6 +799,10 @@
     leftGain.gain.setValueAtTime(1, context.currentTime);
     rightGain.gain.setValueAtTime(1, context.currentTime);
 
+    if (mode.pitchTimeline) {
+      applyPitchTimeline(context, [leftOscillator.frequency, rightOscillator.frequency], mode.pitchTimeline, cleanupTasks);
+    }
+
     if (mode.pulseTimeline) {
       applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources, cleanupTasks);
     }
@@ -685,6 +824,10 @@
     carrier.frequency.setValueAtTime(mode.left, context.currentTime);
     modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
 
+    if (mode.pitchTimeline) {
+      applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks);
+    }
+
     if (mode.pulseTimeline) {
       modulationGain.gain.setValueAtTime(PULSE_GATE_BASE, context.currentTime);
       applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
@@ -705,6 +848,13 @@
       lfoDepth.connect(modulationGain.gain);
       sources.push(lfo);
     }
+  }
+
+  function applyPitchTimeline(context, targets, timeline, cleanupTasks) {
+    targets.forEach((target) => {
+      const cleanupSchedule = scheduleLoopingPulseTimeline(target, timeline, context);
+      cleanupTasks.push(cleanupSchedule);
+    });
   }
 
   function applyPulseTimeline(context, targets, timeline, sources, cleanupTasks) {
@@ -774,11 +924,15 @@
   }
 
   function schedulePulseTimelineCycle(param, timeline, startTime) {
-    param.setValueAtTime(timeline[0].rate, startTime);
+    param.setValueAtTime(getTimelinePointValue(timeline[0]), startTime);
 
     timeline.slice(1).forEach((point) => {
-      param.linearRampToValueAtTime(point.rate, startTime + point.time);
+      param.linearRampToValueAtTime(getTimelinePointValue(point), startTime + point.time);
     });
+  }
+
+  function getTimelinePointValue(point) {
+    return point.rate ?? point.pitch;
   }
 
   function cleanupGraph(targetGraph) {
@@ -973,10 +1127,10 @@
     elements.currentModeDescription.textContent = mode.description;
 
     if (mode.pulseTimeline) {
-      elements.primaryFrequencyLabel.textContent = "Tone";
+      elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
       elements.secondaryFrequencyLabel.textContent = "Output";
       elements.differenceFrequencyLabel.textContent = "Pulse";
-      elements.leftFrequency.textContent = formatHz(mode.left);
+      elements.leftFrequency.textContent = mode.pitchTimeline ? formatPitchRange(mode.pitchTimeline) : formatHz(mode.left);
       elements.rightFrequency.textContent = isSpeakerMode ? "Mono" : "L/R";
       elements.differenceFrequency.textContent = formatPulseRange(mode.pulseTimeline);
     } else {
@@ -1067,13 +1221,21 @@
   }
 
   function formatPulseRange(timeline) {
+    return formatTimelineRange(timeline, "rate");
+  }
+
+  function formatPitchRange(timeline) {
+    return formatTimelineRange(timeline, "pitch");
+  }
+
+  function formatTimelineRange(timeline, property) {
     if (!timeline || !timeline.length) {
       return "--";
     }
 
-    const rates = timeline.map((point) => point.rate);
-    const min = Math.min(...rates);
-    const max = Math.max(...rates);
+    const values = timeline.map((point) => point[property]);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
     return `${formatNumber(min)}-${formatNumber(max)}Hz`;
   }
 
