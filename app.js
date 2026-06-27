@@ -366,7 +366,7 @@
     masterVolume: 70,
     toneVolume: MODES.focus.toneVolume,
     noiseVolume: MODES.focus.noiseVolume,
-    timerMinutes: 30,
+    timerMinutes: 0,
     noiseType: MODES.focus.noise,
     isPlaying: false
   };
