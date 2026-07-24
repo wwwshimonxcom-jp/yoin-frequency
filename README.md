@@ -1,82 +1,46 @@
-# YOIN frequency
+# YOIN Frequency
 
-YOIN frequencyは、集中・リラックス・睡眠・シューマン共振のイメージに合わせた周波数音とノイズを再生する、HTML/CSS/JavaScriptだけのシンプルなPWAです。
+YOIN Frequencyは、音楽を聴きながら周波数音やホワイト・ピンク・ブラウンノイズを重ねて使うためのアプリです。
 
-Web Audio APIでサイン波の周波数音とピンクノイズ/ブラウンノイズ/ミックスノイズを再生します。イヤホン向けのバイノーラル再生と、スピーカー向けのモノラル+ゆらぎ再生を切り替えできます。再生、停止、全体音量、周波数音量、ノイズ音量、タイマー、前回設定の保存に対応しています。表示は通常のFull UIと、iPhoneの1画面操作向けCompact UIを切り替えできます。
+このリポジトリには、現在公開中のWeb版と、SwiftUIで開発しているiPhone・iPad版が入っています。
 
-## ローカルでの起動方法
+## 使いたい版を選ぶ
 
-このアプリは静的ファイルだけで動きます。PWAとService Workerの確認をする場合は、`file://`ではなくローカルサーバーで開いてください。
+| 種類 | 状態 | 入口 |
+| --- | --- | --- |
+| Web版（PWA） | 公開中 | [Web版を開く](https://yoin-frequency.netlify.app) / [Web版の説明](./web/README.md) |
+| iPhone・iPad版 | Phase 1 開発中 | [iOS版の説明](./ios/README.md) / [実機テスト項目](./ios/DEVICE_TEST_CHECKLIST.md) |
+
+## フォルダ構成
+
+```text
+yoin-frequency/
+├── web/          Web版（HTML / CSS / JavaScript / PWA）
+├── ios/          iPhone・iPad版（SwiftUI / AVAudioEngine）
+├── netlify.toml  Web版の公開設定
+└── README.md     この総合案内
+```
+
+Web版とiOS版は、それぞれのフォルダ内だけで起動・開発できます。
+
+## すぐに開く
+
+### Web版
 
 ```bash
-cd yoin-frequency
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory web
 ```
 
 ブラウザで `http://localhost:8000` を開きます。
 
-## GitHub Pagesへの公開方法
+### iPhone・iPad版
 
-1. `index.html`、`style.css`、`app.js`、`manifest.json`、`service-worker.js`、`icons/` をリポジトリへ配置します。
-2. GitHubのリポジトリ設定で「Pages」を開きます。
-3. 公開元を対象ブランチのルート、またはこのフォルダに合わせて設定します。
-4. 発行されたURLを開き、ホーム画面追加と再生を確認します。
+Xcodeで `ios/YOINFrequency.xcodeproj` を開きます。
 
-Netlifyでは、このフォルダをドラッグ&ドロップするだけでも公開できます。
+## 公開とデータ管理
 
-## モード
+- Netlifyは `web/` だけを公開します。公開URLは従来どおりです。
+- Web版のプリセットは `web/app.js`、iOS版のプリセットは `ios/YOINFrequency/Resources/presets.json` で管理しています。
+- 録音の再分析結果を反映するときは、両方のプリセットを照合して更新します。
 
-| Mode | 用途 | 左耳 | 右耳 | 差分 | ノイズ |
-| --- | --- | ---: | ---: | ---: | --- |
-| Focus | 作業・読書・デザイン作業向け | 200Hz | 214Hz | 14Hz | ピンクノイズ |
-| Zone 528 | 528Hzをベースにした深い集中・ゾーン作業向け | 528Hz | 542Hz | 14Hz | ピンクノイズ |
-| Relax | 休憩・ストレッチ・夜のリラックス向け | 200Hz | 210Hz | 10Hz | ブラウンノイズ |
-| Sleep | 入眠・寝落ち向け | 200Hz | 204Hz | 4Hz | ブラウンノイズ |
-| Schumann | シューマン共振7.83Hzをイメージした瞑想・リラックス向け | 200Hz | 207.83Hz | 7.83Hz | ブラウンノイズ |
-| Business | ビジネス能力の向上 | 200Hz | 同一 | 3.54〜11.92Hzの可変パルス | ピンクノイズ |
-| Business Pitch | ビジネス能力の向上 | 68.32〜227.9Hzの可変Pitch | 同一 | 3.54〜11.92Hzの可変パルス | ピンクノイズ |
-| Creative | クリエイティブ能力の向上 | 200Hz | 同一 | 2.53〜11.7Hzの可変パルス | ピンクノイズ |
-| Creative Pitch | クリエイティブ能力の向上 | 65.29〜240.06Hzの可変Pitch | 同一 | 2.53〜11.7Hzの可変パルス | ピンクノイズ |
-| Noise Only | 周波数なしでノイズだけ流すモード | - | - | - | ピンク/ブラウン/ミックス切替 |
-
-## 表示モード
-
-- Full: 既存の情報量が多い通常UIです。
-- Compact: iPhoneの画面内で再生、停止、音量、モード、ノイズ、タイマーを操作しやすい圧縮UIです。
-
-## リスニングモード
-
-- Headphones: 左右の耳に別々の周波数を出すバイノーラルビート用です。イヤホン推奨です。
-- Speaker: 左右差を作らず、同じ周波数をスピーカー向けに鳴らします。差分Hzは音量のゆっくりしたゆらぎとして使います。
-
-## パルスカーブモード
-
-- Pulseはトトト間隔のHz、Pitchは音の高さのHzです。
-- Business: 音の高さはSchumannモードと同じ200Hzで固定し、音声解析で抽出した00:00-29:50のトトト間隔をもとに、約3.54〜11.92Hzの範囲でパルス速度を変化させるモードです。30秒ごとに再解析し、終端の強い外れ値だけ軽くならしています。
-- Business Pitch: Businessと同じパルスカーブに加えて、元音声の00:00-29:50から推定した音の高さを約68.32〜227.9Hzの範囲で変化させるモードです。
-- Creative: 音の高さは200Hzで固定し、音声解析で抽出した30:00-50:00のトトト間隔をもとに、約2.53〜11.7Hzの範囲でパルス速度を変化させるモードです。
-- Creative Pitch: Creativeと同じパルスカーブに加えて、元音声の30:00-50:00から推定した音の高さを約65.29〜240.06Hzの範囲で変化させるモードです。
-- Business / Business Pitchを選ぶとタイマーは自動で29:50、Creative / Creative Pitchを選ぶと自動で20:00になります。
-- タイマーを無制限、または各モードの長さより長く設定した場合、BusinessとCreative系のパルスカーブとPitchカーブは終端後に先頭からループします。
-- 200Hzの音を短く刻むため、初期音量は控えめにしています。
-
-## 注意事項
-
-小さめの音量で使用してください。バイノーラルビートはイヤホン推奨です。スピーカーで使う場合はSpeakerモードを推奨します。運転中や危険を伴う作業中の使用は避けてください。効果には個人差があります。
-
-このアプリは医療目的のアプリではなく、効果を保証するものではありません。体調に違和感がある場合は使用を中止してください。
-
-## iPhoneでの音声再生
-
-iPhone Safari/Chromeでは、ユーザー操作後にだけ音声再生を開始できます。そのため、ページを開いただけでは音は鳴らず、「再生」ボタンを押してからWeb Audio APIのAudioContextを開始します。
-
-## 技術メモ
-
-- HTML/CSS/JavaScriptのみ
-- Web Audio API使用
-- Headphonesモードでは`ChannelMergerNode`で左右の周波数を分離
-- Speakerモードでは左右同一のサイン波に差分Hzの音量ゆらぎを加える
-- サイン波、ピンクノイズ、ブラウンノイズ、ミックスノイズを生成
-- 再生時はマスター音量0からフェードイン、停止時とタイマー終了時はフェードアウト
-- `localStorage`で前回の設定を保存
-- `manifest.json`と`service-worker.js`でPWA対応
+このアプリは医療目的のアプリではありません。最初は小さな音量で試してください。

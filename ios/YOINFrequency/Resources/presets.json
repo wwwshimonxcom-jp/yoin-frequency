@@ -1,0 +1,1392 @@
+[
+  {
+    "id": "focus",
+    "analysisVersion": 1,
+    "name": "Focus",
+    "description": "作業・読書・デザイン作業向け",
+    "leftFrequency": 200,
+    "rightFrequency": 214,
+    "differenceFrequency": 14,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 24,
+    "defaultNoiseVolume": 18,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  },
+  {
+    "id": "zone528",
+    "analysisVersion": 1,
+    "name": "Zone 528",
+    "description": "528Hzをベースにした深い集中・ゾーン作業向け",
+    "leftFrequency": 528,
+    "rightFrequency": 542,
+    "differenceFrequency": 14,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 14,
+    "defaultNoiseVolume": 16,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  },
+  {
+    "id": "relax",
+    "analysisVersion": 1,
+    "name": "Relax",
+    "description": "休憩・ストレッチ・夜のリラックス向け",
+    "leftFrequency": 200,
+    "rightFrequency": 210,
+    "differenceFrequency": 10,
+    "defaultNoise": "brown",
+    "defaultToneVolume": 22,
+    "defaultNoiseVolume": 20,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  },
+  {
+    "id": "sleep",
+    "analysisVersion": 1,
+    "name": "Sleep",
+    "description": "入眠・寝落ち向け",
+    "leftFrequency": 200,
+    "rightFrequency": 204,
+    "differenceFrequency": 4,
+    "defaultNoise": "brown",
+    "defaultToneVolume": 12,
+    "defaultNoiseVolume": 16,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  },
+  {
+    "id": "schumann",
+    "analysisVersion": 1,
+    "name": "Schumann",
+    "description": "シューマン共振7.83Hzをイメージした瞑想・リラックス向け",
+    "leftFrequency": 200,
+    "rightFrequency": 207.83,
+    "differenceFrequency": 7.83,
+    "defaultNoise": "brown",
+    "defaultToneVolume": 20,
+    "defaultNoiseVolume": 18,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  },
+  {
+    "id": "hadou2950",
+    "analysisVersion": 1,
+    "name": "Business",
+    "description": "ビジネス能力の向上",
+    "leftFrequency": 200,
+    "rightFrequency": 200,
+    "differenceFrequency": 0,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 10,
+    "defaultNoiseVolume": 14,
+    "durationSeconds": 1790,
+    "loop": true,
+    "pulseTimeline": [
+      {
+        "time": 0,
+        "value": 5.91
+      },
+      {
+        "time": 30,
+        "value": 9.81
+      },
+      {
+        "time": 60,
+        "value": 11.92
+      },
+      {
+        "time": 90,
+        "value": 11.62
+      },
+      {
+        "time": 120,
+        "value": 10.99
+      },
+      {
+        "time": 150,
+        "value": 10.35
+      },
+      {
+        "time": 180,
+        "value": 9.73
+      },
+      {
+        "time": 210,
+        "value": 9.11
+      },
+      {
+        "time": 240,
+        "value": 8.5
+      },
+      {
+        "time": 270,
+        "value": 7.89
+      },
+      {
+        "time": 300,
+        "value": 7.8
+      },
+      {
+        "time": 330,
+        "value": 7.8
+      },
+      {
+        "time": 360,
+        "value": 7.8
+      },
+      {
+        "time": 390,
+        "value": 7.8
+      },
+      {
+        "time": 420,
+        "value": 7.8
+      },
+      {
+        "time": 450,
+        "value": 7.8
+      },
+      {
+        "time": 480,
+        "value": 7.8
+      },
+      {
+        "time": 510,
+        "value": 7.8
+      },
+      {
+        "time": 540,
+        "value": 7.8
+      },
+      {
+        "time": 570,
+        "value": 7.8
+      },
+      {
+        "time": 600,
+        "value": 7.61
+      },
+      {
+        "time": 630,
+        "value": 7.4
+      },
+      {
+        "time": 660,
+        "value": 7.18
+      },
+      {
+        "time": 690,
+        "value": 6.97
+      },
+      {
+        "time": 720,
+        "value": 6.75
+      },
+      {
+        "time": 750,
+        "value": 6.54
+      },
+      {
+        "time": 780,
+        "value": 6.31
+      },
+      {
+        "time": 810,
+        "value": 6.1
+      },
+      {
+        "time": 840,
+        "value": 5.9
+      },
+      {
+        "time": 870,
+        "value": 5.67
+      },
+      {
+        "time": 900,
+        "value": 5.46
+      },
+      {
+        "time": 930,
+        "value": 5.25
+      },
+      {
+        "time": 960,
+        "value": 5.03
+      },
+      {
+        "time": 990,
+        "value": 4.84
+      },
+      {
+        "time": 1020,
+        "value": 4.6
+      },
+      {
+        "time": 1050,
+        "value": 4.39
+      },
+      {
+        "time": 1080,
+        "value": 4.17
+      },
+      {
+        "time": 1110,
+        "value": 3.95
+      },
+      {
+        "time": 1140,
+        "value": 3.74
+      },
+      {
+        "time": 1170,
+        "value": 3.54
+      },
+      {
+        "time": 1200,
+        "value": 3.88
+      },
+      {
+        "time": 1230,
+        "value": 4.31
+      },
+      {
+        "time": 1260,
+        "value": 4.75
+      },
+      {
+        "time": 1290,
+        "value": 5.17
+      },
+      {
+        "time": 1320,
+        "value": 5.61
+      },
+      {
+        "time": 1350,
+        "value": 6.04
+      },
+      {
+        "time": 1380,
+        "value": 6.44
+      },
+      {
+        "time": 1410,
+        "value": 6.9
+      },
+      {
+        "time": 1440,
+        "value": 7.33
+      },
+      {
+        "time": 1470,
+        "value": 7.75
+      },
+      {
+        "time": 1500,
+        "value": 8.88
+      },
+      {
+        "time": 1530,
+        "value": 10.17
+      },
+      {
+        "time": 1560,
+        "value": 11.34
+      },
+      {
+        "time": 1590,
+        "value": 11.51
+      },
+      {
+        "time": 1620,
+        "value": 10.48
+      },
+      {
+        "time": 1650,
+        "value": 10.2
+      },
+      {
+        "time": 1680,
+        "value": 11.77
+      },
+      {
+        "time": 1710,
+        "value": 11.74
+      },
+      {
+        "time": 1740,
+        "value": 6.54
+      },
+      {
+        "time": 1770,
+        "value": 4.37
+      },
+      {
+        "time": 1790,
+        "value": 4.37
+      }
+    ],
+    "pitchTimeline": []
+  },
+  {
+    "id": "hadou2950Pitch",
+    "analysisVersion": 1,
+    "name": "Business Pitch",
+    "description": "ビジネス能力の向上",
+    "leftFrequency": 71.56,
+    "rightFrequency": 71.56,
+    "differenceFrequency": 0,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 10,
+    "defaultNoiseVolume": 14,
+    "durationSeconds": 1790,
+    "loop": true,
+    "pulseTimeline": [
+      {
+        "time": 0,
+        "value": 5.91
+      },
+      {
+        "time": 30,
+        "value": 9.81
+      },
+      {
+        "time": 60,
+        "value": 11.92
+      },
+      {
+        "time": 90,
+        "value": 11.62
+      },
+      {
+        "time": 120,
+        "value": 10.99
+      },
+      {
+        "time": 150,
+        "value": 10.35
+      },
+      {
+        "time": 180,
+        "value": 9.73
+      },
+      {
+        "time": 210,
+        "value": 9.11
+      },
+      {
+        "time": 240,
+        "value": 8.5
+      },
+      {
+        "time": 270,
+        "value": 7.89
+      },
+      {
+        "time": 300,
+        "value": 7.8
+      },
+      {
+        "time": 330,
+        "value": 7.8
+      },
+      {
+        "time": 360,
+        "value": 7.8
+      },
+      {
+        "time": 390,
+        "value": 7.8
+      },
+      {
+        "time": 420,
+        "value": 7.8
+      },
+      {
+        "time": 450,
+        "value": 7.8
+      },
+      {
+        "time": 480,
+        "value": 7.8
+      },
+      {
+        "time": 510,
+        "value": 7.8
+      },
+      {
+        "time": 540,
+        "value": 7.8
+      },
+      {
+        "time": 570,
+        "value": 7.8
+      },
+      {
+        "time": 600,
+        "value": 7.61
+      },
+      {
+        "time": 630,
+        "value": 7.4
+      },
+      {
+        "time": 660,
+        "value": 7.18
+      },
+      {
+        "time": 690,
+        "value": 6.97
+      },
+      {
+        "time": 720,
+        "value": 6.75
+      },
+      {
+        "time": 750,
+        "value": 6.54
+      },
+      {
+        "time": 780,
+        "value": 6.31
+      },
+      {
+        "time": 810,
+        "value": 6.1
+      },
+      {
+        "time": 840,
+        "value": 5.9
+      },
+      {
+        "time": 870,
+        "value": 5.67
+      },
+      {
+        "time": 900,
+        "value": 5.46
+      },
+      {
+        "time": 930,
+        "value": 5.25
+      },
+      {
+        "time": 960,
+        "value": 5.03
+      },
+      {
+        "time": 990,
+        "value": 4.84
+      },
+      {
+        "time": 1020,
+        "value": 4.6
+      },
+      {
+        "time": 1050,
+        "value": 4.39
+      },
+      {
+        "time": 1080,
+        "value": 4.17
+      },
+      {
+        "time": 1110,
+        "value": 3.95
+      },
+      {
+        "time": 1140,
+        "value": 3.74
+      },
+      {
+        "time": 1170,
+        "value": 3.54
+      },
+      {
+        "time": 1200,
+        "value": 3.88
+      },
+      {
+        "time": 1230,
+        "value": 4.31
+      },
+      {
+        "time": 1260,
+        "value": 4.75
+      },
+      {
+        "time": 1290,
+        "value": 5.17
+      },
+      {
+        "time": 1320,
+        "value": 5.61
+      },
+      {
+        "time": 1350,
+        "value": 6.04
+      },
+      {
+        "time": 1380,
+        "value": 6.44
+      },
+      {
+        "time": 1410,
+        "value": 6.9
+      },
+      {
+        "time": 1440,
+        "value": 7.33
+      },
+      {
+        "time": 1470,
+        "value": 7.75
+      },
+      {
+        "time": 1500,
+        "value": 8.88
+      },
+      {
+        "time": 1530,
+        "value": 10.17
+      },
+      {
+        "time": 1560,
+        "value": 11.34
+      },
+      {
+        "time": 1590,
+        "value": 11.51
+      },
+      {
+        "time": 1620,
+        "value": 10.48
+      },
+      {
+        "time": 1650,
+        "value": 10.2
+      },
+      {
+        "time": 1680,
+        "value": 11.77
+      },
+      {
+        "time": 1710,
+        "value": 11.74
+      },
+      {
+        "time": 1740,
+        "value": 6.54
+      },
+      {
+        "time": 1770,
+        "value": 4.37
+      },
+      {
+        "time": 1790,
+        "value": 4.37
+      }
+    ],
+    "pitchTimeline": [
+      {
+        "time": 0,
+        "value": 71.56
+      },
+      {
+        "time": 30,
+        "value": 99.9
+      },
+      {
+        "time": 60,
+        "value": 142.02
+      },
+      {
+        "time": 90,
+        "value": 72.35
+      },
+      {
+        "time": 120,
+        "value": 145.01
+      },
+      {
+        "time": 150,
+        "value": 145.1
+      },
+      {
+        "time": 180,
+        "value": 145.12
+      },
+      {
+        "time": 210,
+        "value": 145.17
+      },
+      {
+        "time": 240,
+        "value": 145.17
+      },
+      {
+        "time": 270,
+        "value": 145.16
+      },
+      {
+        "time": 300,
+        "value": 145.22
+      },
+      {
+        "time": 330,
+        "value": 145.19
+      },
+      {
+        "time": 360,
+        "value": 145.14
+      },
+      {
+        "time": 390,
+        "value": 145.27
+      },
+      {
+        "time": 420,
+        "value": 145.27
+      },
+      {
+        "time": 450,
+        "value": 145.28
+      },
+      {
+        "time": 480,
+        "value": 145.33
+      },
+      {
+        "time": 510,
+        "value": 145.28
+      },
+      {
+        "time": 540,
+        "value": 145.32
+      },
+      {
+        "time": 570,
+        "value": 145.29
+      },
+      {
+        "time": 600,
+        "value": 145.37
+      },
+      {
+        "time": 630,
+        "value": 145.56
+      },
+      {
+        "time": 660,
+        "value": 145.49
+      },
+      {
+        "time": 690,
+        "value": 145.55
+      },
+      {
+        "time": 720,
+        "value": 145.56
+      },
+      {
+        "time": 750,
+        "value": 145.48
+      },
+      {
+        "time": 780,
+        "value": 145.48
+      },
+      {
+        "time": 810,
+        "value": 145.43
+      },
+      {
+        "time": 840,
+        "value": 145.44
+      },
+      {
+        "time": 870,
+        "value": 145.52
+      },
+      {
+        "time": 900,
+        "value": 77.6
+      },
+      {
+        "time": 930,
+        "value": 145.55
+      },
+      {
+        "time": 960,
+        "value": 145.56
+      },
+      {
+        "time": 990,
+        "value": 227.9
+      },
+      {
+        "time": 1020,
+        "value": 99.95
+      },
+      {
+        "time": 1050,
+        "value": 97.29
+      },
+      {
+        "time": 1080,
+        "value": 177.09
+      },
+      {
+        "time": 1110,
+        "value": 100.21
+      },
+      {
+        "time": 1140,
+        "value": 95.01
+      },
+      {
+        "time": 1170,
+        "value": 100.64
+      },
+      {
+        "time": 1200,
+        "value": 100.35
+      },
+      {
+        "time": 1230,
+        "value": 100.53
+      },
+      {
+        "time": 1260,
+        "value": 100.79
+      },
+      {
+        "time": 1290,
+        "value": 100.68
+      },
+      {
+        "time": 1320,
+        "value": 100.43
+      },
+      {
+        "time": 1350,
+        "value": 100.15
+      },
+      {
+        "time": 1380,
+        "value": 100.24
+      },
+      {
+        "time": 1410,
+        "value": 100.51
+      },
+      {
+        "time": 1440,
+        "value": 100.17
+      },
+      {
+        "time": 1470,
+        "value": 100.22
+      },
+      {
+        "time": 1500,
+        "value": 75.44
+      },
+      {
+        "time": 1530,
+        "value": 75.69
+      },
+      {
+        "time": 1560,
+        "value": 94.82
+      },
+      {
+        "time": 1590,
+        "value": 105.51
+      },
+      {
+        "time": 1620,
+        "value": 68.32
+      },
+      {
+        "time": 1650,
+        "value": 96.57
+      },
+      {
+        "time": 1680,
+        "value": 75.21
+      },
+      {
+        "time": 1710,
+        "value": 96.61
+      },
+      {
+        "time": 1740,
+        "value": 96.4
+      },
+      {
+        "time": 1770,
+        "value": 96.66
+      },
+      {
+        "time": 1790,
+        "value": 96.66
+      }
+    ]
+  },
+  {
+    "id": "creative",
+    "analysisVersion": 1,
+    "name": "Creative",
+    "description": "クリエイティブ能力の向上",
+    "leftFrequency": 200,
+    "rightFrequency": 200,
+    "differenceFrequency": 0,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 10,
+    "defaultNoiseVolume": 14,
+    "durationSeconds": 1200,
+    "loop": true,
+    "pulseTimeline": [
+      {
+        "time": 0,
+        "value": 7.25
+      },
+      {
+        "time": 30,
+        "value": 8.5
+      },
+      {
+        "time": 60,
+        "value": 7.43
+      },
+      {
+        "time": 90,
+        "value": 8.93
+      },
+      {
+        "time": 120,
+        "value": 10.17
+      },
+      {
+        "time": 150,
+        "value": 2.53
+      },
+      {
+        "time": 180,
+        "value": 8.87
+      },
+      {
+        "time": 210,
+        "value": 10.57
+      },
+      {
+        "time": 240,
+        "value": 7.87
+      },
+      {
+        "time": 270,
+        "value": 7.37
+      },
+      {
+        "time": 300,
+        "value": 6.83
+      },
+      {
+        "time": 330,
+        "value": 6.37
+      },
+      {
+        "time": 360,
+        "value": 5.87
+      },
+      {
+        "time": 390,
+        "value": 5.33
+      },
+      {
+        "time": 420,
+        "value": 4.83
+      },
+      {
+        "time": 450,
+        "value": 4.37
+      },
+      {
+        "time": 480,
+        "value": 3.93
+      },
+      {
+        "time": 510,
+        "value": 3.67
+      },
+      {
+        "time": 540,
+        "value": 3.43
+      },
+      {
+        "time": 570,
+        "value": 3.17
+      },
+      {
+        "time": 600,
+        "value": 9
+      },
+      {
+        "time": 630,
+        "value": 9
+      },
+      {
+        "time": 660,
+        "value": 3
+      },
+      {
+        "time": 690,
+        "value": 3
+      },
+      {
+        "time": 720,
+        "value": 3
+      },
+      {
+        "time": 750,
+        "value": 9
+      },
+      {
+        "time": 780,
+        "value": 9
+      },
+      {
+        "time": 810,
+        "value": 9
+      },
+      {
+        "time": 840,
+        "value": 9
+      },
+      {
+        "time": 870,
+        "value": 9
+      },
+      {
+        "time": 900,
+        "value": 3
+      },
+      {
+        "time": 930,
+        "value": 9
+      },
+      {
+        "time": 960,
+        "value": 9
+      },
+      {
+        "time": 990,
+        "value": 9
+      },
+      {
+        "time": 1020,
+        "value": 9
+      },
+      {
+        "time": 1050,
+        "value": 9
+      },
+      {
+        "time": 1080,
+        "value": 11.7
+      },
+      {
+        "time": 1110,
+        "value": 2.87
+      },
+      {
+        "time": 1140,
+        "value": 3.77
+      },
+      {
+        "time": 1170,
+        "value": 4.34
+      },
+      {
+        "time": 1200,
+        "value": 4.34
+      }
+    ],
+    "pitchTimeline": []
+  },
+  {
+    "id": "creativePitch",
+    "analysisVersion": 1,
+    "name": "Creative Pitch",
+    "description": "クリエイティブ能力の向上",
+    "leftFrequency": 75.46,
+    "rightFrequency": 75.46,
+    "differenceFrequency": 0,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 10,
+    "defaultNoiseVolume": 14,
+    "durationSeconds": 1200,
+    "loop": true,
+    "pulseTimeline": [
+      {
+        "time": 0,
+        "value": 7.25
+      },
+      {
+        "time": 30,
+        "value": 8.5
+      },
+      {
+        "time": 60,
+        "value": 7.43
+      },
+      {
+        "time": 90,
+        "value": 8.93
+      },
+      {
+        "time": 120,
+        "value": 10.17
+      },
+      {
+        "time": 150,
+        "value": 2.53
+      },
+      {
+        "time": 180,
+        "value": 8.87
+      },
+      {
+        "time": 210,
+        "value": 10.57
+      },
+      {
+        "time": 240,
+        "value": 7.87
+      },
+      {
+        "time": 270,
+        "value": 7.37
+      },
+      {
+        "time": 300,
+        "value": 6.83
+      },
+      {
+        "time": 330,
+        "value": 6.37
+      },
+      {
+        "time": 360,
+        "value": 5.87
+      },
+      {
+        "time": 390,
+        "value": 5.33
+      },
+      {
+        "time": 420,
+        "value": 4.83
+      },
+      {
+        "time": 450,
+        "value": 4.37
+      },
+      {
+        "time": 480,
+        "value": 3.93
+      },
+      {
+        "time": 510,
+        "value": 3.67
+      },
+      {
+        "time": 540,
+        "value": 3.43
+      },
+      {
+        "time": 570,
+        "value": 3.17
+      },
+      {
+        "time": 600,
+        "value": 9
+      },
+      {
+        "time": 630,
+        "value": 9
+      },
+      {
+        "time": 660,
+        "value": 3
+      },
+      {
+        "time": 690,
+        "value": 3
+      },
+      {
+        "time": 720,
+        "value": 3
+      },
+      {
+        "time": 750,
+        "value": 9
+      },
+      {
+        "time": 780,
+        "value": 9
+      },
+      {
+        "time": 810,
+        "value": 9
+      },
+      {
+        "time": 840,
+        "value": 9
+      },
+      {
+        "time": 870,
+        "value": 9
+      },
+      {
+        "time": 900,
+        "value": 3
+      },
+      {
+        "time": 930,
+        "value": 9
+      },
+      {
+        "time": 960,
+        "value": 9
+      },
+      {
+        "time": 990,
+        "value": 9
+      },
+      {
+        "time": 1020,
+        "value": 9
+      },
+      {
+        "time": 1050,
+        "value": 9
+      },
+      {
+        "time": 1080,
+        "value": 11.7
+      },
+      {
+        "time": 1110,
+        "value": 2.87
+      },
+      {
+        "time": 1140,
+        "value": 3.77
+      },
+      {
+        "time": 1170,
+        "value": 4.34
+      },
+      {
+        "time": 1200,
+        "value": 4.34
+      }
+    ],
+    "pitchTimeline": [
+      {
+        "time": 0,
+        "value": 75.46
+      },
+      {
+        "time": 30,
+        "value": 100.08
+      },
+      {
+        "time": 60,
+        "value": 99.89
+      },
+      {
+        "time": 90,
+        "value": 99.96
+      },
+      {
+        "time": 120,
+        "value": 69.36
+      },
+      {
+        "time": 150,
+        "value": 100.04
+      },
+      {
+        "time": 180,
+        "value": 69.31
+      },
+      {
+        "time": 210,
+        "value": 100.25
+      },
+      {
+        "time": 240,
+        "value": 65.29
+      },
+      {
+        "time": 270,
+        "value": 100.22
+      },
+      {
+        "time": 300,
+        "value": 100.4
+      },
+      {
+        "time": 330,
+        "value": 100.58
+      },
+      {
+        "time": 360,
+        "value": 100.49
+      },
+      {
+        "time": 390,
+        "value": 172.82
+      },
+      {
+        "time": 420,
+        "value": 69.4
+      },
+      {
+        "time": 450,
+        "value": 100.34
+      },
+      {
+        "time": 480,
+        "value": 100.33
+      },
+      {
+        "time": 510,
+        "value": 105.57
+      },
+      {
+        "time": 540,
+        "value": 100.74
+      },
+      {
+        "time": 570,
+        "value": 100.74
+      },
+      {
+        "time": 600,
+        "value": 125.1
+      },
+      {
+        "time": 630,
+        "value": 123.25
+      },
+      {
+        "time": 660,
+        "value": 100.36
+      },
+      {
+        "time": 690,
+        "value": 68
+      },
+      {
+        "time": 720,
+        "value": 100.51
+      },
+      {
+        "time": 750,
+        "value": 73.36
+      },
+      {
+        "time": 780,
+        "value": 100.69
+      },
+      {
+        "time": 810,
+        "value": 100.52
+      },
+      {
+        "time": 840,
+        "value": 100.2
+      },
+      {
+        "time": 870,
+        "value": 100.15
+      },
+      {
+        "time": 900,
+        "value": 225.51
+      },
+      {
+        "time": 930,
+        "value": 238.69
+      },
+      {
+        "time": 960,
+        "value": 163.69
+      },
+      {
+        "time": 990,
+        "value": 240.06
+      },
+      {
+        "time": 1020,
+        "value": 225.52
+      },
+      {
+        "time": 1050,
+        "value": 100.45
+      },
+      {
+        "time": 1080,
+        "value": 101.03
+      },
+      {
+        "time": 1110,
+        "value": 69.05
+      },
+      {
+        "time": 1140,
+        "value": 100.13
+      },
+      {
+        "time": 1170,
+        "value": 96.58
+      },
+      {
+        "time": 1200,
+        "value": 96.58
+      }
+    ]
+  },
+  {
+    "id": "noiseOnly",
+    "analysisVersion": 1,
+    "name": "Noise Only",
+    "description": "周波数なしでノイズだけ流すモード",
+    "leftFrequency": null,
+    "rightFrequency": null,
+    "differenceFrequency": null,
+    "defaultNoise": "pink",
+    "defaultToneVolume": 0,
+    "defaultNoiseVolume": 34,
+    "durationSeconds": null,
+    "loop": true,
+    "pulseTimeline": [],
+    "pitchTimeline": []
+  }
+]
