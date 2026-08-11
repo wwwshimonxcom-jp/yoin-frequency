@@ -5,6 +5,15 @@
   if (!BUSINESS_DATA || !Array.isArray(BUSINESS_DATA.pulseLayers) || BUSINESS_DATA.pulseLayers.length !== 2) {
     throw new Error("Business two-layer analysis data is unavailable.");
   }
+  const RAW_MENU_DATA = window.YOIN_RAW_MENU_DATA;
+  const CREATIVE_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.creativeRaw;
+  const THOUGHTS_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.thoughtsMakeThingsRaw;
+  if (!CREATIVE_RAW_DATA || !Array.isArray(CREATIVE_RAW_DATA.pulseLayers) || CREATIVE_RAW_DATA.pulseLayers.length !== 2) {
+    throw new Error("Creative Raw two-layer analysis data is unavailable.");
+  }
+  if (!THOUGHTS_RAW_DATA || !Array.isArray(THOUGHTS_RAW_DATA.pulseLayers) || THOUGHTS_RAW_DATA.pulseLayers.length !== 2) {
+    throw new Error("Thoughts make things Raw two-layer analysis data is unavailable.");
+  }
 
   const BUSINESS_SECONDS = BUSINESS_DATA.durationSeconds;
   const BUSINESS_TIMER_MINUTES = Math.round(BUSINESS_SECONDS) / 60;
@@ -12,6 +21,16 @@
   const BUSINESS_PULSE_LAYERS = BUSINESS_DATA.pulseLayers;
   const BUSINESS_PULSE_TIMELINE = BUSINESS_PULSE_LAYERS[0].rateTimeline;
   const BUSINESS_PITCH_TIMELINE = BUSINESS_DATA.originalPitchTimeline;
+  const CREATIVE_RAW_SECONDS = CREATIVE_RAW_DATA.durationSeconds;
+  const CREATIVE_RAW_TIMER_MINUTES = Math.round(CREATIVE_RAW_SECONDS) / 60;
+  const CREATIVE_RAW_PULSE_LAYERS = CREATIVE_RAW_DATA.pulseLayers;
+  const CREATIVE_RAW_PULSE_TIMELINE = CREATIVE_RAW_PULSE_LAYERS[0].rateTimeline;
+  const CREATIVE_RAW_PITCH_TIMELINE = CREATIVE_RAW_DATA.originalPitchTimeline;
+  const THOUGHTS_RAW_SECONDS = THOUGHTS_RAW_DATA.durationSeconds;
+  const THOUGHTS_RAW_TIMER_MINUTES = Math.round(THOUGHTS_RAW_SECONDS) / 60;
+  const THOUGHTS_RAW_PULSE_LAYERS = THOUGHTS_RAW_DATA.pulseLayers;
+  const THOUGHTS_RAW_PULSE_TIMELINE = THOUGHTS_RAW_PULSE_LAYERS[0].rateTimeline;
+  const THOUGHTS_RAW_PITCH_TIMELINE = THOUGHTS_RAW_DATA.originalPitchTimeline;
   const CREATIVE_SECONDS = 20 * 60;
   const CREATIVE_MINUTES = CREATIVE_SECONDS / 60;
   const CREATIVE_CARRIER_FREQUENCY = 200;
@@ -218,6 +237,36 @@
       pulseTimeline: CREATIVE_PULSE_TIMELINE,
       durationSeconds: CREATIVE_SECONDS,
       timerMinutes: CREATIVE_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
+    creativeRaw: {
+      name: "Creative Raw",
+      description: "クリエイティブ能力の向上",
+      left: CREATIVE_RAW_PITCH_TIMELINE[0].pitch,
+      right: CREATIVE_RAW_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: CREATIVE_RAW_PITCH_TIMELINE,
+      pulseTimeline: CREATIVE_RAW_PULSE_TIMELINE,
+      pulseLayers: CREATIVE_RAW_PULSE_LAYERS,
+      durationSeconds: CREATIVE_RAW_SECONDS,
+      timerMinutes: CREATIVE_RAW_TIMER_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
+    thoughtsMakeThingsRaw: {
+      name: "Thoughts make things Raw",
+      description: "思考の現実化",
+      left: THOUGHTS_RAW_PITCH_TIMELINE[0].pitch,
+      right: THOUGHTS_RAW_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: THOUGHTS_RAW_PITCH_TIMELINE,
+      pulseTimeline: THOUGHTS_RAW_PULSE_TIMELINE,
+      pulseLayers: THOUGHTS_RAW_PULSE_LAYERS,
+      durationSeconds: THOUGHTS_RAW_SECONDS,
+      timerMinutes: THOUGHTS_RAW_TIMER_MINUTES,
       noise: "pink",
       toneVolume: 10,
       noiseVolume: 14

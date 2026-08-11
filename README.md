@@ -17,7 +17,7 @@ python3 -m http.server 8000
 
 ## GitHub Pagesへの公開方法
 
-1. `index.html`、`style.css`、`app.js`、`manifest.json`、`service-worker.js`、`icons/` をリポジトリへ配置します。
+1. `index.html`、`style.css`、`app.js`、`business-pulse-data.js`、`raw-menu-data.js`、`manifest.json`、`service-worker.js`、`icons/` をリポジトリへ配置します。
 2. GitHubのリポジトリ設定で「Pages」を開きます。
 3. 公開元を対象ブランチのルート、またはこのフォルダに合わせて設定します。
 4. 発行されたURLを開き、ホーム画面追加と再生を確認します。
@@ -38,6 +38,8 @@ Netlifyでは、このフォルダをドラッグ&ドロップするだけでも
 | Business Raw | ビジネス能力の向上 | 95Hz | 同一 | 約2.03〜11.96Hzの2レイヤー可変パルス | ピンクノイズ |
 | Creative | クリエイティブ能力の向上 | 200Hz | 同一 | 2.53〜11.7Hzの可変パルス | ピンクノイズ |
 | Creative Pitch | クリエイティブ能力の向上 | 65.29〜240.06Hzの可変Pitch | 同一 | 2.53〜11.7Hzの可変パルス | ピンクノイズ |
+| Creative Raw | クリエイティブ能力の向上 | 約69.49〜248.75Hzの可変Pitch | 同一 | 約2.03〜11.96Hzの2レイヤー可変パルス | ピンクノイズ |
+| Thoughts make things Raw | 思考の現実化 | 95Hz | 同一 | 約2.03〜11.96Hzの2レイヤー可変パルス | ピンクノイズ |
 | Noise Only | 周波数なしでノイズだけ流すモード | - | - | - | ピンク/ブラウン/ミックス切替 |
 
 ## 表示モード
@@ -58,8 +60,10 @@ Netlifyでは、このフォルダをドラッグ&ドロップするだけでも
 - Business Raw: Business Pitchに副Pulseを加えた2レイヤー版です。副Pulseは主Pulseやその単純な整数倍・半分と区別できる成分がある区間だけ混ざります。有効時間は全体の約36%で、最大ミックスは32%です。主レイヤーと副レイヤーのミックス合計は常に1.0です。
 - Creative: 音の高さは200Hzで固定し、音声解析で抽出した30:00-50:00のトトト間隔をもとに、約2.53〜11.7Hzの範囲でパルス速度を変化させるモードです。
 - Creative Pitch: Creativeと同じパルスカーブに加えて、元音声の30:00-50:00から推定した音の高さを約65.29〜240.06Hzの範囲で変化させるモードです。
-- Business / Business Pitch / Business Rawを選ぶとタイマーは自動で30:01、Creative / Creative Pitchを選ぶと自動で20:00になります。
-- タイマーを無制限、または各モードの長さより長く設定した場合、BusinessとCreative系のパルスカーブとPitchカーブは終端後に先頭からループします。
+- Creative Raw: GarageBandで書き出したCreative音源を8秒窓/0.25秒ホップで再解析した2レイヤー版です。Pitchは約69.49〜248.75Hzの範囲で時間変化します。副Pulseの有効時間は全体の約64.76%、最大ミックスは32%です。
+- Thoughts make things Raw: 思考の現実化音源を同じ条件で解析した2レイヤー版です。Pitchは実質95Hz固定、Pulseは約2.03〜11.96Hzの範囲で変化します。副Pulseの有効時間は全体の約34.51%、最大ミックスは32%です。
+- Business / Business Pitch / Business Rawを選ぶとタイマーは自動で30:01、Creative / Creative Pitchを選ぶと自動で20:00、Creative Raw / Thoughts make things Rawを選ぶと解析音源の長さに合わせた時間になります。
+- タイマーを無制限、または各モードの長さより長く設定した場合、Business / Creative / Thoughts make things系のパルスカーブとPitchカーブは終端後に先頭からループします。
 - 200Hzの音を短く刻むため、初期音量は控えめにしています。
 
 ## 注意事項
@@ -78,7 +82,7 @@ iPhone Safari/Chromeでは、ユーザー操作後にだけ音声再生を開始
 - Web Audio API使用
 - Headphonesモードでは`ChannelMergerNode`で左右の周波数を分離
 - Speakerモードでは左右同一のサイン波に差分Hzの音量ゆらぎを加える
-- Business系の2レイヤーPulseは同じキャリア音を2本のGainへ分岐して変調し、位相差を作らずに合流する
+- Raw系の2レイヤーPulseは同じキャリア音を2本のGainへ分岐して変調し、位相差を作らずに合流する
 - サイン波、ピンクノイズ、ブラウンノイズ、ミックスノイズを生成
 - 再生時はマスター音量0からフェードイン、停止時とタイマー終了時はフェードアウト
 - `localStorage`で前回の設定を保存
