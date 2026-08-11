@@ -1,137 +1,20 @@
 (() => {
   "use strict";
 
-  const HADOU_2950_SECONDS = (29 * 60) + 50;
-  const HADOU_2950_MINUTES = HADOU_2950_SECONDS / 60;
-  const HADOU_2950_CARRIER_FREQUENCY = 200;
-  const HADOU_2950_PULSE_TIMELINE = [
-    { time: 0, rate: 5.91 },
-    { time: 30, rate: 9.81 },
-    { time: 60, rate: 11.92 },
-    { time: 90, rate: 11.62 },
-    { time: 120, rate: 10.99 },
-    { time: 150, rate: 10.35 },
-    { time: 180, rate: 9.73 },
-    { time: 210, rate: 9.11 },
-    { time: 240, rate: 8.5 },
-    { time: 270, rate: 7.89 },
-    { time: 300, rate: 7.8 },
-    { time: 330, rate: 7.8 },
-    { time: 360, rate: 7.8 },
-    { time: 390, rate: 7.8 },
-    { time: 420, rate: 7.8 },
-    { time: 450, rate: 7.8 },
-    { time: 480, rate: 7.8 },
-    { time: 510, rate: 7.8 },
-    { time: 540, rate: 7.8 },
-    { time: 570, rate: 7.8 },
-    { time: 600, rate: 7.61 },
-    { time: 630, rate: 7.4 },
-    { time: 660, rate: 7.18 },
-    { time: 690, rate: 6.97 },
-    { time: 720, rate: 6.75 },
-    { time: 750, rate: 6.54 },
-    { time: 780, rate: 6.31 },
-    { time: 810, rate: 6.1 },
-    { time: 840, rate: 5.9 },
-    { time: 870, rate: 5.67 },
-    { time: 900, rate: 5.46 },
-    { time: 930, rate: 5.25 },
-    { time: 960, rate: 5.03 },
-    { time: 990, rate: 4.84 },
-    { time: 1020, rate: 4.6 },
-    { time: 1050, rate: 4.39 },
-    { time: 1080, rate: 4.17 },
-    { time: 1110, rate: 3.95 },
-    { time: 1140, rate: 3.74 },
-    { time: 1170, rate: 3.54 },
-    { time: 1200, rate: 3.88 },
-    { time: 1230, rate: 4.31 },
-    { time: 1260, rate: 4.75 },
-    { time: 1290, rate: 5.17 },
-    { time: 1320, rate: 5.61 },
-    { time: 1350, rate: 6.04 },
-    { time: 1380, rate: 6.44 },
-    { time: 1410, rate: 6.9 },
-    { time: 1440, rate: 7.33 },
-    { time: 1470, rate: 7.75 },
-    { time: 1500, rate: 8.88 },
-    { time: 1530, rate: 10.17 },
-    { time: 1560, rate: 11.34 },
-    { time: 1590, rate: 11.51 },
-    { time: 1620, rate: 10.48 },
-    { time: 1650, rate: 10.2 },
-    { time: 1680, rate: 11.77 },
-    { time: 1710, rate: 11.74 },
-    { time: 1740, rate: 6.54 },
-    { time: 1770, rate: 4.37 },
-    { time: HADOU_2950_SECONDS, rate: 4.37 }
-  ];
-  const HADOU_2950_PITCH_TIMELINE = [
-    { time: 0, pitch: 71.56 },
-    { time: 30, pitch: 99.9 },
-    { time: 60, pitch: 142.02 },
-    { time: 90, pitch: 72.35 },
-    { time: 120, pitch: 145.01 },
-    { time: 150, pitch: 145.1 },
-    { time: 180, pitch: 145.12 },
-    { time: 210, pitch: 145.17 },
-    { time: 240, pitch: 145.17 },
-    { time: 270, pitch: 145.16 },
-    { time: 300, pitch: 145.22 },
-    { time: 330, pitch: 145.19 },
-    { time: 360, pitch: 145.14 },
-    { time: 390, pitch: 145.27 },
-    { time: 420, pitch: 145.27 },
-    { time: 450, pitch: 145.28 },
-    { time: 480, pitch: 145.33 },
-    { time: 510, pitch: 145.28 },
-    { time: 540, pitch: 145.32 },
-    { time: 570, pitch: 145.29 },
-    { time: 600, pitch: 145.37 },
-    { time: 630, pitch: 145.56 },
-    { time: 660, pitch: 145.49 },
-    { time: 690, pitch: 145.55 },
-    { time: 720, pitch: 145.56 },
-    { time: 750, pitch: 145.48 },
-    { time: 780, pitch: 145.48 },
-    { time: 810, pitch: 145.43 },
-    { time: 840, pitch: 145.44 },
-    { time: 870, pitch: 145.52 },
-    { time: 900, pitch: 77.6 },
-    { time: 930, pitch: 145.55 },
-    { time: 960, pitch: 145.56 },
-    { time: 990, pitch: 227.9 },
-    { time: 1020, pitch: 99.95 },
-    { time: 1050, pitch: 97.29 },
-    { time: 1080, pitch: 177.09 },
-    { time: 1110, pitch: 100.21 },
-    { time: 1140, pitch: 95.01 },
-    { time: 1170, pitch: 100.64 },
-    { time: 1200, pitch: 100.35 },
-    { time: 1230, pitch: 100.53 },
-    { time: 1260, pitch: 100.79 },
-    { time: 1290, pitch: 100.68 },
-    { time: 1320, pitch: 100.43 },
-    { time: 1350, pitch: 100.15 },
-    { time: 1380, pitch: 100.24 },
-    { time: 1410, pitch: 100.51 },
-    { time: 1440, pitch: 100.17 },
-    { time: 1470, pitch: 100.22 },
-    { time: 1500, pitch: 75.44 },
-    { time: 1530, pitch: 75.69 },
-    { time: 1560, pitch: 94.82 },
-    { time: 1590, pitch: 105.51 },
-    { time: 1620, pitch: 68.32 },
-    { time: 1650, pitch: 96.57 },
-    { time: 1680, pitch: 75.21 },
-    { time: 1710, pitch: 96.61 },
-    { time: 1740, pitch: 96.4 },
-    { time: 1770, pitch: 96.66 },
-    { time: HADOU_2950_SECONDS, pitch: 96.66 }
-  ];
+  const BUSINESS_DATA = window.YOIN_BUSINESS_DATA;
+  if (!BUSINESS_DATA || !Array.isArray(BUSINESS_DATA.pulseLayers) || BUSINESS_DATA.pulseLayers.length !== 2) {
+    throw new Error("Business two-layer analysis data is unavailable.");
+  }
+
+  const BUSINESS_SECONDS = BUSINESS_DATA.durationSeconds;
+  const BUSINESS_TIMER_MINUTES = Math.round(BUSINESS_SECONDS) / 60;
+  const BUSINESS_CARRIER_FREQUENCY = BUSINESS_DATA.fixedToneHz;
+  const BUSINESS_PULSE_LAYERS = BUSINESS_DATA.pulseLayers;
+  const BUSINESS_PULSE_TIMELINE = BUSINESS_PULSE_LAYERS[0].rateTimeline;
+  const BUSINESS_PITCH_TIMELINE = BUSINESS_DATA.originalPitchTimeline;
   const CREATIVE_SECONDS = 20 * 60;
   const CREATIVE_MINUTES = CREATIVE_SECONDS / 60;
+  const CREATIVE_CARRIER_FREQUENCY = 200;
   const CREATIVE_PULSE_TIMELINE = [
     { time: 0, rate: 7.25 },
     { time: 30, rate: 8.5 },
@@ -273,12 +156,12 @@
     hadou2950: {
       name: "Business",
       description: "ビジネス能力の向上",
-      left: HADOU_2950_CARRIER_FREQUENCY,
-      right: HADOU_2950_CARRIER_FREQUENCY,
+      left: BUSINESS_CARRIER_FREQUENCY,
+      right: BUSINESS_CARRIER_FREQUENCY,
       difference: 0,
-      pulseTimeline: HADOU_2950_PULSE_TIMELINE,
-      durationSeconds: HADOU_2950_SECONDS,
-      timerMinutes: HADOU_2950_MINUTES,
+      pulseTimeline: BUSINESS_PULSE_TIMELINE,
+      durationSeconds: BUSINESS_SECONDS,
+      timerMinutes: BUSINESS_TIMER_MINUTES,
       noise: "pink",
       toneVolume: 10,
       noiseVolume: 14
@@ -286,13 +169,28 @@
     hadou2950Pitch: {
       name: "Business Pitch",
       description: "ビジネス能力の向上",
-      left: HADOU_2950_PITCH_TIMELINE[0].pitch,
-      right: HADOU_2950_PITCH_TIMELINE[0].pitch,
+      left: BUSINESS_PITCH_TIMELINE[0].pitch,
+      right: BUSINESS_PITCH_TIMELINE[0].pitch,
       difference: 0,
-      pitchTimeline: HADOU_2950_PITCH_TIMELINE,
-      pulseTimeline: HADOU_2950_PULSE_TIMELINE,
-      durationSeconds: HADOU_2950_SECONDS,
-      timerMinutes: HADOU_2950_MINUTES,
+      pitchTimeline: BUSINESS_PITCH_TIMELINE,
+      pulseTimeline: BUSINESS_PULSE_TIMELINE,
+      durationSeconds: BUSINESS_SECONDS,
+      timerMinutes: BUSINESS_TIMER_MINUTES,
+      noise: "pink",
+      toneVolume: 10,
+      noiseVolume: 14
+    },
+    businessRaw: {
+      name: "Business Raw",
+      description: "ビジネス能力の向上",
+      left: BUSINESS_PITCH_TIMELINE[0].pitch,
+      right: BUSINESS_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: BUSINESS_PITCH_TIMELINE,
+      pulseTimeline: BUSINESS_PULSE_TIMELINE,
+      pulseLayers: BUSINESS_PULSE_LAYERS,
+      durationSeconds: BUSINESS_SECONDS,
+      timerMinutes: BUSINESS_TIMER_MINUTES,
       noise: "pink",
       toneVolume: 10,
       noiseVolume: 14
@@ -300,8 +198,8 @@
     creative: {
       name: "Creative",
       description: "クリエイティブ能力の向上",
-      left: HADOU_2950_CARRIER_FREQUENCY,
-      right: HADOU_2950_CARRIER_FREQUENCY,
+      left: CREATIVE_CARRIER_FREQUENCY,
+      right: CREATIVE_CARRIER_FREQUENCY,
       difference: 0,
       pulseTimeline: CREATIVE_PULSE_TIMELINE,
       durationSeconds: CREATIVE_SECONDS,
@@ -339,7 +237,7 @@
   const TIMER_OPTIONS = [
     { label: "15分", minutes: 15 },
     { label: "20分", minutes: 20 },
-    { label: "29:50", minutes: HADOU_2950_MINUTES },
+    { label: "30:01", minutes: BUSINESS_TIMER_MINUTES },
     { label: "30分", minutes: 30 },
     { label: "60分", minutes: 60 },
     { label: "90分", minutes: 90 },
@@ -355,7 +253,7 @@
   const PULSE_GATE_BASE = 0.5;
   const PULSE_GATE_DEPTH = 0.45;
   const PULSE_GATE_SMOOTHING_HZ = 32;
-  const PULSE_TIMELINE_LOOKAHEAD_CYCLES = 3;
+  const PULSE_TIMELINE_LOOKAHEAD_CYCLES = 1;
   const NORMAL_FADE_SECONDS = 1.2;
   const TIMER_FADE_SECONDS = 5;
 
@@ -574,7 +472,8 @@
 
     if (mode.pulseTimeline) {
       const toneLabel = mode.pitchTimeline ? `pitch ${formatPitchRange(mode.pitchTimeline)}` : formatHz(mode.left);
-      return `${toneLabel} / pulse ${formatPulseRange(mode.pulseTimeline)} / ${formatDurationSeconds(mode.durationSeconds)}`;
+      const layerLabel = mode.pulseLayers ? ` · ${mode.pulseLayers.length} layers` : "";
+      return `${toneLabel} / pulse ${formatModePulseRange(mode)}${layerLabel} / ${formatDurationSeconds(mode.durationSeconds)}`;
     }
 
     if (state.listeningMode === "speaker") {
@@ -789,28 +688,59 @@
     const merger = context.createChannelMerger(2);
     const leftOscillator = context.createOscillator();
     const rightOscillator = context.createOscillator();
-    const leftGain = context.createGain();
-    const rightGain = context.createGain();
 
     leftOscillator.type = "sine";
     rightOscillator.type = "sine";
     leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
     rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
-    leftGain.gain.setValueAtTime(1, context.currentTime);
-    rightGain.gain.setValueAtTime(1, context.currentTime);
 
     if (mode.pitchTimeline) {
       applyPitchTimeline(context, [leftOscillator.frequency, rightOscillator.frequency], mode.pitchTimeline, cleanupTasks);
     }
 
-    if (mode.pulseTimeline) {
-      applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources, cleanupTasks);
-    }
+    if (mode.pulseLayers) {
+      mode.pulseLayers.forEach((layer) => {
+        const leftPulseGain = context.createGain();
+        const rightPulseGain = context.createGain();
+        const leftMixGain = context.createGain();
+        const rightMixGain = context.createGain();
 
-    leftOscillator.connect(leftGain);
-    rightOscillator.connect(rightGain);
-    leftGain.connect(merger, 0, 0);
-    rightGain.connect(merger, 0, 1);
+        applyPulseTimeline(
+          context,
+          [leftPulseGain.gain, rightPulseGain.gain],
+          layer.rateTimeline,
+          sources,
+          cleanupTasks
+        );
+        applyGainTimeline(
+          context,
+          [leftMixGain.gain, rightMixGain.gain],
+          layer.gainTimeline,
+          cleanupTasks
+        );
+
+        leftOscillator.connect(leftPulseGain);
+        rightOscillator.connect(rightPulseGain);
+        leftPulseGain.connect(leftMixGain);
+        rightPulseGain.connect(rightMixGain);
+        leftMixGain.connect(merger, 0, 0);
+        rightMixGain.connect(merger, 0, 1);
+      });
+    } else {
+      const leftGain = context.createGain();
+      const rightGain = context.createGain();
+
+      leftGain.gain.setValueAtTime(1, context.currentTime);
+      rightGain.gain.setValueAtTime(1, context.currentTime);
+      if (mode.pulseTimeline) {
+        applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources, cleanupTasks);
+      }
+
+      leftOscillator.connect(leftGain);
+      rightOscillator.connect(rightGain);
+      leftGain.connect(merger, 0, 0);
+      rightGain.connect(merger, 0, 1);
+    }
     merger.connect(destination);
 
     sources.push(leftOscillator, rightOscillator);
@@ -818,41 +748,61 @@
 
   function createSpeakerTone(context, mode, destination, sources, cleanupTasks) {
     const carrier = context.createOscillator();
-    const modulationGain = context.createGain();
 
     carrier.type = "sine";
     carrier.frequency.setValueAtTime(mode.left, context.currentTime);
-    modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
 
     if (mode.pitchTimeline) {
       applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks);
     }
 
-    if (mode.pulseTimeline) {
-      modulationGain.gain.setValueAtTime(PULSE_GATE_BASE, context.currentTime);
-      applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
-    }
+    if (mode.pulseLayers) {
+      mode.pulseLayers.forEach((layer) => {
+        const pulseGain = context.createGain();
+        const mixGain = context.createGain();
 
-    carrier.connect(modulationGain);
-    modulationGain.connect(destination);
+        applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
+        applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
+        carrier.connect(pulseGain);
+        pulseGain.connect(mixGain);
+        mixGain.connect(destination);
+      });
+    } else {
+      const modulationGain = context.createGain();
+
+      modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
+      if (mode.pulseTimeline) {
+        applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
+      }
+
+      carrier.connect(modulationGain);
+      modulationGain.connect(destination);
+
+      if (mode.difference > 0 && !mode.pulseTimeline) {
+        const lfo = context.createOscillator();
+        const lfoDepth = context.createGain();
+
+        lfo.type = "sine";
+        lfo.frequency.setValueAtTime(mode.difference, context.currentTime);
+        lfoDepth.gain.setValueAtTime(SPEAKER_MODULATION_DEPTH, context.currentTime);
+        lfo.connect(lfoDepth);
+        lfoDepth.connect(modulationGain.gain);
+        sources.push(lfo);
+      }
+    }
     sources.push(carrier);
-
-    if (mode.difference > 0 && !mode.pulseTimeline) {
-      const lfo = context.createOscillator();
-      const lfoDepth = context.createGain();
-
-      lfo.type = "sine";
-      lfo.frequency.setValueAtTime(mode.difference, context.currentTime);
-      lfoDepth.gain.setValueAtTime(SPEAKER_MODULATION_DEPTH, context.currentTime);
-      lfo.connect(lfoDepth);
-      lfoDepth.connect(modulationGain.gain);
-      sources.push(lfo);
-    }
   }
 
   function applyPitchTimeline(context, targets, timeline, cleanupTasks) {
     targets.forEach((target) => {
-      const cleanupSchedule = scheduleLoopingPulseTimeline(target, timeline, context);
+      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context);
+      cleanupTasks.push(cleanupSchedule);
+    });
+  }
+
+  function applyGainTimeline(context, targets, timeline, cleanupTasks) {
+    targets.forEach((target) => {
+      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context);
       cleanupTasks.push(cleanupSchedule);
     });
   }
@@ -863,7 +813,7 @@
     const lfoSmoother = context.createBiquadFilter();
 
     lfo.type = "square";
-    const cleanupSchedule = scheduleLoopingPulseTimeline(lfo.frequency, timeline, context);
+    const cleanupSchedule = scheduleLoopingTimeline(lfo.frequency, timeline, context);
     cleanupTasks.push(cleanupSchedule);
     lfoDepth.gain.setValueAtTime(PULSE_GATE_DEPTH, context.currentTime);
     lfoSmoother.type = "lowpass";
@@ -879,16 +829,7 @@
     sources.push(lfo);
   }
 
-  function schedulePulseTimeline(param, timeline, now) {
-    if (!timeline.length) {
-      return;
-    }
-
-    param.cancelScheduledValues(now);
-    schedulePulseTimelineCycle(param, timeline, now);
-  }
-
-  function scheduleLoopingPulseTimeline(param, timeline, context) {
+  function scheduleLoopingTimeline(param, timeline, context) {
     if (!timeline.length) {
       return () => {};
     }
@@ -898,7 +839,7 @@
 
     if (!duration) {
       param.cancelScheduledValues(startTime);
-      param.setValueAtTime(timeline[0].rate, startTime);
+      param.setValueAtTime(getTimelinePointValue(timeline[0]), startTime);
       return () => {};
     }
 
@@ -909,7 +850,7 @@
       const targetCycle = currentCycle + PULSE_TIMELINE_LOOKAHEAD_CYCLES;
 
       for (let cycle = scheduledCycle + 1; cycle <= targetCycle; cycle += 1) {
-        schedulePulseTimelineCycle(param, timeline, startTime + (cycle * duration));
+        scheduleTimelineCycle(param, timeline, startTime + (cycle * duration));
       }
 
       scheduledCycle = Math.max(scheduledCycle, targetCycle);
@@ -923,7 +864,7 @@
     return () => window.clearInterval(refreshTimer);
   }
 
-  function schedulePulseTimelineCycle(param, timeline, startTime) {
+  function scheduleTimelineCycle(param, timeline, startTime) {
     param.setValueAtTime(getTimelinePointValue(timeline[0]), startTime);
 
     timeline.slice(1).forEach((point) => {
@@ -932,7 +873,7 @@
   }
 
   function getTimelinePointValue(point) {
-    return point.rate ?? point.pitch;
+    return point.rate ?? point.pitch ?? point.gain;
   }
 
   function cleanupGraph(targetGraph) {
@@ -1129,10 +1070,10 @@
     if (mode.pulseTimeline) {
       elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
       elements.secondaryFrequencyLabel.textContent = "Output";
-      elements.differenceFrequencyLabel.textContent = "Pulse";
+      elements.differenceFrequencyLabel.textContent = mode.pulseLayers ? `Pulse x${mode.pulseLayers.length}` : "Pulse";
       elements.leftFrequency.textContent = mode.pitchTimeline ? formatPitchRange(mode.pitchTimeline) : formatHz(mode.left);
       elements.rightFrequency.textContent = isSpeakerMode ? "Mono" : "L/R";
-      elements.differenceFrequency.textContent = formatPulseRange(mode.pulseTimeline);
+      elements.differenceFrequency.textContent = formatModePulseRange(mode);
     } else {
       elements.primaryFrequencyLabel.textContent = isSpeakerMode ? "Tone" : "Left";
       elements.secondaryFrequencyLabel.textContent = isSpeakerMode ? "Output" : "Right";
@@ -1224,6 +1165,14 @@
     return formatTimelineRange(timeline, "rate");
   }
 
+  function formatModePulseRange(mode) {
+    if (!mode.pulseLayers) {
+      return formatPulseRange(mode.pulseTimeline);
+    }
+
+    return formatPulseRange(mode.pulseLayers.flatMap((layer) => layer.rateTimeline));
+  }
+
   function formatPitchRange(timeline) {
     return formatTimelineRange(timeline, "pitch");
   }
@@ -1236,6 +1185,9 @@
     const values = timeline.map((point) => point[property]);
     const min = Math.min(...values);
     const max = Math.max(...values);
+    if (Math.abs(max - min) < 0.005) {
+      return `${formatNumber((min + max) / 2)}Hz`;
+    }
     return `${formatNumber(min)}-${formatNumber(max)}Hz`;
   }
 

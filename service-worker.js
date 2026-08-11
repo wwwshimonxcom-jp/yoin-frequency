@@ -1,8 +1,9 @@
-const CACHE_NAME = "yoin-frequency-v22";
+const CACHE_NAME = "yoin-frequency-v23";
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./style.css",
+  "./business-pulse-data.js",
   "./app.js",
   "./manifest.json",
   "./icons/icon-192.png",
