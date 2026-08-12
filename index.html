@@ -48,10 +48,6 @@
             <dd id="leftFrequency">200Hz</dd>
           </div>
           <div>
-            <dt id="secondaryFrequencyLabel">Output</dt>
-            <dd id="rightFrequency">Mono</dd>
-          </div>
-          <div>
             <dt id="differenceFrequencyLabel">Pulse</dt>
             <dd id="differenceFrequency">14Hz</dd>
           </div>
@@ -62,9 +58,7 @@
             <span id="loopStatus">通常再生</span>
             <span id="loopTime">--</span>
           </div>
-          <div class="loop-progress-track" aria-hidden="true">
-            <div id="loopProgressFill" class="loop-progress-fill"></div>
-          </div>
+          <input id="loopProgressSlider" class="loop-progress-slider" type="range" min="0" max="1000" step="1" value="0" aria-label="Loop position" disabled>
         </div>
       </section>
 

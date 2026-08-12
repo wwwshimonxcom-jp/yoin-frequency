@@ -144,6 +144,18 @@
     thoughtsMakeThingsRaw: "thoughtsMakeThings"
   };
 
+  const MODE_ORDER = [
+    "business",
+    "creative",
+    "thoughtsMakeThings",
+    "schumann",
+    "zone528",
+    "focus",
+    "relax",
+    "sleep",
+    "noiseOnly"
+  ];
+
   const TIMER_OPTIONS = [
     { label: "15分", minutes: 15 },
     { label: "20分", minutes: 20 },
@@ -186,6 +198,7 @@
   let timerDeadline = null;
   let loopProgressInterval = null;
   let playbackStartedAt = null;
+  let loopOffsetSeconds = 0;
   let isStopping = false;
   let restartToken = 0;
 
@@ -197,15 +210,13 @@
     currentModeName: document.getElementById("currentModeName"),
     currentModeDescription: document.getElementById("currentModeDescription"),
     primaryFrequencyLabel: document.getElementById("primaryFrequencyLabel"),
-    secondaryFrequencyLabel: document.getElementById("secondaryFrequencyLabel"),
     differenceFrequencyLabel: document.getElementById("differenceFrequencyLabel"),
     leftFrequency: document.getElementById("leftFrequency"),
-    rightFrequency: document.getElementById("rightFrequency"),
     differenceFrequency: document.getElementById("differenceFrequency"),
     noiseLabel: document.getElementById("noiseLabel"),
     loopStatus: document.getElementById("loopStatus"),
     loopTime: document.getElementById("loopTime"),
-    loopProgressFill: document.getElementById("loopProgressFill"),
+    loopProgressSlider: document.getElementById("loopProgressSlider"),
     playbackStatus: document.getElementById("playbackStatus"),
     playButton: document.getElementById("playButton"),
     stopButton: document.getElementById("stopButton"),
@@ -335,6 +346,9 @@
     elements.mixedNoiseButton.addEventListener("click", () => {
       selectNoiseType("mixed");
     });
+
+    elements.loopProgressSlider.addEventListener("input", handleLoopProgressInput);
+    elements.loopProgressSlider.addEventListener("change", handleLoopProgressCommit);
   }
 
   function selectLayoutMode(layoutMode) {
@@ -350,7 +364,8 @@
   function renderModeButtons() {
     elements.modeGrid.innerHTML = "";
 
-    Object.entries(MODES).forEach(([key, mode]) => {
+    MODE_ORDER.forEach((key) => {
+      const mode = MODES[key];
       const button = document.createElement("button");
       const frequencyLabel = getModeFrequencyLabel(mode);
 
@@ -402,6 +417,7 @@
 
     const wasPlaying = state.isPlaying || Boolean(graph);
     state.mode = modeKey;
+    loopOffsetSeconds = 0;
     state.toneVolume = MODES[modeKey].toneVolume;
     state.noiseVolume = MODES[modeKey].noiseVolume;
     state.noiseType = MODES[modeKey].noise;
@@ -428,6 +444,33 @@
     }
   }
 
+  function handleLoopProgressInput(event) {
+    const mode = MODES[state.mode];
+    if (!mode.durationSeconds) {
+      return;
+    }
+
+    loopOffsetSeconds = getLoopOffsetFromSlider(mode, event.target.value);
+    playbackStartedAt = state.isPlaying ? Date.now() - (loopOffsetSeconds * 1000) : null;
+    applyLoopProgressToView();
+  }
+
+  async function handleLoopProgressCommit(event) {
+    const mode = MODES[state.mode];
+    if (!mode.durationSeconds) {
+      return;
+    }
+
+    loopOffsetSeconds = getLoopOffsetFromSlider(mode, event.target.value);
+    playbackStartedAt = state.isPlaying ? Date.now() - (loopOffsetSeconds * 1000) : null;
+
+    if (state.isPlaying || graph) {
+      await restartAudio();
+    } else {
+      applyLoopProgressToView();
+    }
+  }
+
   async function restartAudio() {
     const token = ++restartToken;
     await stopAudio(0.45, { keepContext: true });
@@ -446,7 +489,7 @@
       const now = context.currentTime;
       const mode = MODES[state.mode];
 
-      graph = createAudioGraph(context, mode);
+      graph = createAudioGraph(context, mode, loopOffsetSeconds);
       state.isPlaying = true;
       isStopping = false;
       startTimer();
@@ -474,7 +517,7 @@
     }
 
     clearTimer();
-    clearLoopProgress();
+    clearLoopProgress({ resetOffset: !options.keepContext });
 
     if (!graph) {
       state.isPlaying = false;
@@ -530,7 +573,7 @@
     return audioContext;
   }
 
-  function createAudioGraph(context, mode) {
+  function createAudioGraph(context, mode, offsetSeconds = 0) {
     const masterGain = context.createGain();
     const toneGain = context.createGain();
     const noiseGain = context.createGain();
@@ -546,7 +589,7 @@
     masterGain.connect(context.destination);
 
     if (mode.left !== null && mode.right !== null && state.toneVolume > 0) {
-      createSpeakerTone(context, mode, toneGain, sources, cleanupTasks);
+      createSpeakerTone(context, mode, toneGain, sources, cleanupTasks, offsetSeconds);
     }
 
     const noiseSource = context.createBufferSource();
@@ -565,14 +608,14 @@
     };
   }
 
-  function createSpeakerTone(context, mode, destination, sources, cleanupTasks) {
+  function createSpeakerTone(context, mode, destination, sources, cleanupTasks, offsetSeconds = 0) {
     const carrier = context.createOscillator();
 
     carrier.type = "sine";
     carrier.frequency.setValueAtTime(mode.left, context.currentTime);
 
     if (mode.pitchTimeline) {
-      applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks);
+      applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks, offsetSeconds);
     }
 
     if (mode.pulseLayers) {
@@ -580,8 +623,8 @@
         const pulseGain = context.createGain();
         const mixGain = context.createGain();
 
-        applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
-        applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
+        applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks, offsetSeconds);
+        applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks, offsetSeconds);
         carrier.connect(pulseGain);
         pulseGain.connect(mixGain);
         mixGain.connect(destination);
@@ -591,7 +634,7 @@
 
       modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
       if (mode.pulseTimeline) {
-        applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
+        applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks, offsetSeconds);
       }
 
       carrier.connect(modulationGain);
@@ -613,27 +656,27 @@
     sources.push(carrier);
   }
 
-  function applyPitchTimeline(context, targets, timeline, cleanupTasks) {
+  function applyPitchTimeline(context, targets, timeline, cleanupTasks, offsetSeconds = 0) {
     targets.forEach((target) => {
-      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context);
+      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context, offsetSeconds);
       cleanupTasks.push(cleanupSchedule);
     });
   }
 
-  function applyGainTimeline(context, targets, timeline, cleanupTasks) {
+  function applyGainTimeline(context, targets, timeline, cleanupTasks, offsetSeconds = 0) {
     targets.forEach((target) => {
-      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context);
+      const cleanupSchedule = scheduleLoopingTimeline(target, timeline, context, offsetSeconds);
       cleanupTasks.push(cleanupSchedule);
     });
   }
 
-  function applyPulseTimeline(context, targets, timeline, sources, cleanupTasks) {
+  function applyPulseTimeline(context, targets, timeline, sources, cleanupTasks, offsetSeconds = 0) {
     const lfo = context.createOscillator();
     const lfoDepth = context.createGain();
     const lfoSmoother = context.createBiquadFilter();
 
     lfo.type = "square";
-    const cleanupSchedule = scheduleLoopingTimeline(lfo.frequency, timeline, context);
+    const cleanupSchedule = scheduleLoopingTimeline(lfo.frequency, timeline, context, offsetSeconds);
     cleanupTasks.push(cleanupSchedule);
     lfoDepth.gain.setValueAtTime(PULSE_GATE_DEPTH, context.currentTime);
     lfoSmoother.type = "lowpass";
@@ -649,13 +692,14 @@
     sources.push(lfo);
   }
 
-  function scheduleLoopingTimeline(param, timeline, context) {
+  function scheduleLoopingTimeline(param, timeline, context, offsetSeconds = 0) {
     if (!timeline.length) {
       return () => {};
     }
 
     const duration = timeline[timeline.length - 1].time;
     const startTime = context.currentTime;
+    const safeOffset = duration ? normalizeTimelineTime(offsetSeconds, duration) : 0;
 
     if (!duration) {
       param.cancelScheduledValues(startTime);
@@ -665,12 +709,17 @@
 
     let scheduledCycle = -1;
     const scheduleAhead = () => {
-      const elapsed = Math.max(0, context.currentTime - startTime);
+      const elapsed = Math.max(0, context.currentTime - startTime) + safeOffset;
       const currentCycle = Math.floor(elapsed / duration);
       const targetCycle = currentCycle + PULSE_TIMELINE_LOOKAHEAD_CYCLES;
 
       for (let cycle = scheduledCycle + 1; cycle <= targetCycle; cycle += 1) {
-        scheduleTimelineCycle(param, timeline, startTime + (cycle * duration));
+        if (cycle === 0) {
+          scheduleTimelineCycleFromOffset(param, timeline, startTime, safeOffset);
+        } else {
+          const cycleStartTime = startTime + ((cycle * duration) - safeOffset);
+          scheduleTimelineCycle(param, timeline, cycleStartTime);
+        }
       }
 
       scheduledCycle = Math.max(scheduledCycle, targetCycle);
@@ -684,6 +733,16 @@
     return () => window.clearInterval(refreshTimer);
   }
 
+  function scheduleTimelineCycleFromOffset(param, timeline, startTime, offsetSeconds) {
+    param.setValueAtTime(getTimelineValueAtTime(timeline, offsetSeconds), startTime);
+
+    timeline
+      .filter((point) => point.time > offsetSeconds)
+      .forEach((point) => {
+        param.linearRampToValueAtTime(getTimelinePointValue(point), startTime + (point.time - offsetSeconds));
+      });
+  }
+
   function scheduleTimelineCycle(param, timeline, startTime) {
     param.setValueAtTime(getTimelinePointValue(timeline[0]), startTime);
 
@@ -694,6 +753,36 @@
 
   function getTimelinePointValue(point) {
     return point.rate ?? point.pitch ?? point.gain;
+  }
+
+  function getTimelineValueAtTime(timeline, time) {
+    if (time <= timeline[0].time) {
+      return getTimelinePointValue(timeline[0]);
+    }
+
+    for (let index = 1; index < timeline.length; index += 1) {
+      const current = timeline[index];
+      if (time <= current.time) {
+        const previous = timeline[index - 1];
+        const previousValue = getTimelinePointValue(previous);
+        const currentValue = getTimelinePointValue(current);
+        const segmentDuration = current.time - previous.time;
+        const ratio = segmentDuration ? (time - previous.time) / segmentDuration : 0;
+        return previousValue + ((currentValue - previousValue) * ratio);
+      }
+    }
+
+    return getTimelinePointValue(timeline[timeline.length - 1]);
+  }
+
+  function normalizeTimelineTime(time, duration) {
+    return ((time % duration) + duration) % duration;
+  }
+
+  function getLoopOffsetFromSlider(mode, sliderValue) {
+    const durationSeconds = Math.max(1, mode.durationSeconds || 1);
+    const normalized = clampNumber(sliderValue, 0, 1000, 0) / 1000;
+    return durationSeconds * normalized;
   }
 
   function cleanupGraph(targetGraph) {
@@ -888,16 +977,19 @@
   }
 
   function startLoopProgress() {
-    clearLoopProgress();
-    playbackStartedAt = Date.now();
+    clearLoopProgress({ resetOffset: false });
+    playbackStartedAt = Date.now() - (loopOffsetSeconds * 1000);
     applyLoopProgressToView();
     loopProgressInterval = window.setInterval(applyLoopProgressToView, 500);
   }
 
-  function clearLoopProgress() {
+  function clearLoopProgress(options = {}) {
     if (loopProgressInterval) {
       window.clearInterval(loopProgressInterval);
       loopProgressInterval = null;
+    }
+    if (options.resetOffset) {
+      loopOffsetSeconds = 0;
     }
     playbackStartedAt = null;
     applyLoopProgressToView();
@@ -908,21 +1000,23 @@
     if (!mode.durationSeconds) {
       elements.loopStatus.textContent = "通常再生";
       elements.loopTime.textContent = "--";
-      elements.loopProgressFill.style.width = "0%";
+      elements.loopProgressSlider.value = "0";
+      elements.loopProgressSlider.disabled = true;
       return;
     }
 
     const durationSeconds = Math.max(1, mode.durationSeconds);
     const elapsedSeconds = state.isPlaying && playbackStartedAt
       ? Math.max(0, (Date.now() - playbackStartedAt) / 1000)
-      : 0;
+      : loopOffsetSeconds;
     const cycleIndex = Math.floor(elapsedSeconds / durationSeconds) + 1;
     const cycleElapsed = elapsedSeconds % durationSeconds;
     const progress = Math.min(1, Math.max(0, cycleElapsed / durationSeconds));
 
     elements.loopStatus.textContent = `${cycleIndex}周目`;
     elements.loopTime.textContent = `${formatDurationSeconds(cycleElapsed)} / ${formatDurationSeconds(durationSeconds)}`;
-    elements.loopProgressFill.style.width = `${(progress * 100).toFixed(1)}%`;
+    elements.loopProgressSlider.disabled = false;
+    elements.loopProgressSlider.value = String(Math.round(progress * 1000));
   }
 
   function applyStateToView() {
@@ -935,17 +1029,13 @@
 
     if (mode.pulseTimeline || mode.pulseLayers) {
       elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
-      elements.secondaryFrequencyLabel.textContent = "Output";
       elements.differenceFrequencyLabel.textContent = mode.pulseLayers ? `Pulse x${mode.pulseLayers.length}` : "Pulse";
       elements.leftFrequency.textContent = mode.pitchTimeline ? formatPitchRange(mode.pitchTimeline) : formatHz(mode.left);
-      elements.rightFrequency.textContent = "Mono";
       elements.differenceFrequency.textContent = formatModePulseRange(mode);
     } else {
       elements.primaryFrequencyLabel.textContent = "Tone";
-      elements.secondaryFrequencyLabel.textContent = "Output";
       elements.differenceFrequencyLabel.textContent = "Pulse";
       elements.leftFrequency.textContent = hasTone ? formatHz(mode.left) : "--";
-      elements.rightFrequency.textContent = hasTone ? "Mono" : "--";
       elements.differenceFrequency.textContent = hasTone ? formatHz(mode.difference) : "--";
     }
 

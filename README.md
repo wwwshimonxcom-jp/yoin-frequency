@@ -25,14 +25,14 @@ GitHub Pagesで公開する場合は、`index.html`、`style.css`、`app.js`、`
 
 | Mode | 用途 | Tone / Pitch | Pulse | ノイズ種別 |
 | --- | --- | ---: | ---: | --- |
-| Focus | 作業・読書・デザイン作業向け | 200Hz | 14Hz | Pink |
-| Zone 528 | 528Hzをベースにした深い集中・ゾーン作業向け | 528Hz | 14Hz | Pink |
-| Relax | 休憩・ストレッチ・夜のリラックス向け | 200Hz | 10Hz | Brown |
-| Sleep | 入眠・寝落ち向け | 200Hz | 4Hz | Brown |
-| Schumann | シューマン共振7.83Hzをイメージした瞑想・リラックス向け | 200Hz | 7.83Hz | Brown |
 | Business | ビジネス能力の向上 | 95Hz | 約2.03〜11.96Hzの2レイヤー可変パルス | Pink |
 | Creative | クリエイティブ能力の向上 | 約69.49〜248.75Hzの可変Pitch | 約2.03〜11.96Hzの2レイヤー可変パルス | Pink |
 | Thoughts make things | 思考の現実化 | 95Hz | 約2.03〜11.96Hzの2レイヤー可変パルス | Brown |
+| Schumann | シューマン共振7.83Hzをイメージした瞑想・リラックス向け | 200Hz | 7.83Hz | Brown |
+| Zone 528 | 528Hzをベースにした深い集中・ゾーン作業向け | 528Hz | 14Hz | Pink |
+| Focus | 作業・読書・デザイン作業向け | 200Hz | 14Hz | Pink |
+| Relax | 休憩・ストレッチ・夜のリラックス向け | 200Hz | 10Hz | Brown |
+| Sleep | 入眠・寝落ち向け | 200Hz | 4Hz | Brown |
 | Noise Only | 周波数なしでノイズだけ流すモード | - | - | Pink |
 
 ## ノイズ
@@ -49,7 +49,7 @@ Noise volumeの初期値は0%です。Noise type欄ではPink / Brown / White / 
 
 ## 再生位置
 
-Business / Creative / Thoughts make thingsは解析された長さで1周として扱います。無制限タイマーでは終端後に先頭へ戻り、画面上のバーで現在の周回数と周回内の再生位置を表示します。
+Business / Creative / Thoughts make thingsは解析された長さで1周として扱います。無制限タイマーでは終端後に先頭へ戻り、画面上のバーで現在の周回数と周回内の再生位置を表示します。このバーはスライダーとして操作でき、選んだ位置からPitch/Pulseを再開できます。
 
 通常の固定周波数モードとNoise Onlyでは、再生位置バーは「通常再生」と表示します。
 
