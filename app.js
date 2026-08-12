@@ -294,9 +294,10 @@
   ];
 
   const STORAGE_KEY = "yoin-frequency-settings-v1";
+  const DEFAULTS_VERSION = 2;
   const MASTER_VOLUME_CURVE = 1.15;
-  const TONE_GAIN_MAX = 0.08;
-  const NOISE_GAIN_MAX = 0.13;
+  const TONE_GAIN_MAX = 0.104;
+  const NOISE_GAIN_MAX = 0.169;
   const SPEAKER_MODULATION_BASE = 0.56;
   const SPEAKER_MODULATION_DEPTH = 0.18;
   const PULSE_GATE_BASE = 0.5;
@@ -307,13 +308,14 @@
   const TIMER_FADE_SECONDS = 5;
 
   const defaultState = {
+    defaultsVersion: DEFAULTS_VERSION,
     mode: "focus",
     layoutMode: "full",
-    listeningMode: "headphones",
+    listeningMode: "speaker",
     masterVolume: 70,
     toneVolume: MODES.focus.toneVolume,
     noiseVolume: MODES.focus.noiseVolume,
-    timerMinutes: 30,
+    timerMinutes: 0,
     noiseType: MODES.focus.noise,
     isPlaying: false
   };
@@ -370,18 +372,24 @@
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       const mode = MODES[saved.mode] ? saved.mode : defaultState.mode;
       const noiseType = ["pink", "brown", "mixed"].includes(saved.noiseType) ? saved.noiseType : MODES[mode].noise;
+      const shouldApplyUpdatedDefaults = (Number(saved.defaultsVersion) || 1) < DEFAULTS_VERSION;
+      const savedListeningMode = saved.listeningMode === "speaker" ? "speaker" : "headphones";
+      const savedTimerMinutes = TIMER_OPTIONS.some((item) => item.minutes === Number(saved.timerMinutes))
+        ? Number(saved.timerMinutes)
+        : defaultState.timerMinutes;
 
       return {
         ...defaultState,
         ...saved,
+        defaultsVersion: DEFAULTS_VERSION,
         mode,
         layoutMode: saved.layoutMode === "compact" ? "compact" : "full",
-        listeningMode: saved.listeningMode === "speaker" ? "speaker" : "headphones",
+        listeningMode: shouldApplyUpdatedDefaults ? defaultState.listeningMode : savedListeningMode,
         noiseType,
         masterVolume: clampNumber(saved.masterVolume, 0, 100, defaultState.masterVolume),
         toneVolume: clampNumber(saved.toneVolume, 0, 100, MODES[mode].toneVolume),
         noiseVolume: clampNumber(saved.noiseVolume, 0, 100, MODES[mode].noiseVolume),
-        timerMinutes: TIMER_OPTIONS.some((item) => item.minutes === Number(saved.timerMinutes)) ? Number(saved.timerMinutes) : defaultState.timerMinutes,
+        timerMinutes: shouldApplyUpdatedDefaults ? defaultState.timerMinutes : savedTimerMinutes,
         isPlaying: false
       };
     } catch {
@@ -391,6 +399,7 @@
 
   function saveState() {
     const persisted = {
+      defaultsVersion: DEFAULTS_VERSION,
       mode: state.mode,
       layoutMode: state.layoutMode,
       listeningMode: state.listeningMode,
