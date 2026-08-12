@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#070912">
-    <meta name="description" content="YOIN frequency is a simple binaural beat, noise, and timer web audio app.">
+    <meta name="description" content="YOIN frequency is a speaker-only raw frequency loop player.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="YOIN frequency">
@@ -21,7 +21,7 @@
         <div class="brand-block">
           <p class="studio-mark">YOIN studio</p>
           <h1>YOIN frequency</h1>
-          <p class="tagline">focus, relax, sleep with gentle frequencies</p>
+          <p class="tagline">raw frequency loops for YOIN sessions</p>
         </div>
         <div class="view-switch" role="group" aria-label="Display mode">
           <button id="fullLayoutButton" type="button" data-layout="full" aria-pressed="true">Full</button>
@@ -32,7 +32,6 @@
       <section class="current-card" aria-labelledby="current-mode-label">
         <div class="current-topline">
           <span id="playbackStatus" class="status-pill">停止中</span>
-          <span id="headphoneStatus" class="status-pill subtle">イヤホン推奨</span>
         </div>
 
         <div class="breath-wrap" aria-hidden="true">
@@ -40,34 +39,39 @@
         </div>
 
         <p id="current-mode-label" class="section-kicker">Current mode</p>
-        <h2 id="currentModeName">Focus</h2>
-        <p id="currentModeDescription" class="mode-description">作業・読書・デザイン作業向け</p>
+        <h2 id="currentModeName">Business</h2>
+        <p id="currentModeDescription" class="mode-description">ビジネス能力の向上</p>
 
         <dl class="frequency-grid">
           <div>
-            <dt id="primaryFrequencyLabel">Left</dt>
-            <dd id="leftFrequency">200Hz</dd>
+            <dt id="primaryFrequencyLabel">Pitch</dt>
+            <dd id="leftFrequency">95Hz</dd>
           </div>
           <div>
-            <dt id="secondaryFrequencyLabel">Right</dt>
-            <dd id="rightFrequency">214Hz</dd>
+            <dt id="secondaryFrequencyLabel">Output</dt>
+            <dd id="rightFrequency">Mono</dd>
           </div>
           <div>
-            <dt id="differenceFrequencyLabel">Diff</dt>
-            <dd id="differenceFrequency">14Hz</dd>
+            <dt id="differenceFrequencyLabel">Pulse x2</dt>
+            <dd id="differenceFrequency">2.03-11.96Hz</dd>
           </div>
         </dl>
+
+        <div class="loop-progress" aria-live="polite">
+          <div class="loop-progress-topline">
+            <span id="loopStatus">1周目</span>
+            <span id="loopTime">00:00 / 30:01</span>
+          </div>
+          <div class="loop-progress-track" aria-hidden="true">
+            <div id="loopProgressFill" class="loop-progress-fill"></div>
+          </div>
+        </div>
       </section>
 
       <section class="panel controls-panel" aria-labelledby="controls-heading">
         <div class="panel-heading">
           <h2 id="controls-heading">Player</h2>
-          <span id="remainingTime" class="panel-note">30:00</span>
-        </div>
-
-        <div class="segmented-control listening-control" role="radiogroup" aria-label="Listening mode">
-          <button id="headphonesModeButton" type="button" data-listening-mode="headphones" aria-pressed="true">Headphones</button>
-          <button id="speakerModeButton" type="button" data-listening-mode="speaker" aria-pressed="false">Speaker</button>
+          <span id="remainingTime" class="panel-note">∞</span>
         </div>
 
         <div class="transport-row">
@@ -86,50 +90,38 @@
         <div class="slider-group">
           <label for="toneVolume">
             <span>Frequency</span>
-            <output id="toneVolumeValue" for="toneVolume">24%</output>
+            <output id="toneVolumeValue" for="toneVolume">50%</output>
           </label>
-          <input id="toneVolume" type="range" min="0" max="100" step="1" value="24">
+          <input id="toneVolume" type="range" min="0" max="100" step="1" value="50">
         </div>
 
         <div class="slider-group">
           <label for="noiseVolume">
             <span>Noise</span>
-            <output id="noiseVolumeValue" for="noiseVolume">18%</output>
+            <output id="noiseVolumeValue" for="noiseVolume">0%</output>
           </label>
-          <input id="noiseVolume" type="range" min="0" max="100" step="1" value="18">
+          <input id="noiseVolume" type="range" min="0" max="100" step="1" value="0">
         </div>
       </section>
 
       <section class="panel" aria-labelledby="mode-heading">
         <div class="panel-heading">
           <h2 id="mode-heading">Mode</h2>
-          <span id="noiseLabel" class="panel-note">Pink noise</span>
+          <span id="noiseLabel" class="panel-note">Noise off</span>
         </div>
         <div id="modeGrid" class="mode-grid" role="list"></div>
-      </section>
-
-      <section class="panel" aria-labelledby="noise-heading">
-        <div class="panel-heading">
-          <h2 id="noise-heading">Noise type</h2>
-          <span class="panel-note">Mixも選択可</span>
-        </div>
-        <div class="segmented-control" role="radiogroup" aria-label="Noise type">
-          <button id="pinkNoiseButton" type="button" data-noise="pink" aria-pressed="true">Pink</button>
-          <button id="brownNoiseButton" type="button" data-noise="brown" aria-pressed="false">Brown</button>
-          <button id="mixedNoiseButton" type="button" data-noise="mixed" aria-pressed="false">Mix</button>
-        </div>
       </section>
 
       <section class="panel" aria-labelledby="timer-heading">
         <div class="panel-heading">
           <h2 id="timer-heading">Timer</h2>
-          <span class="panel-note">自動フェードアウト</span>
+          <span class="panel-note">初期値は無制限</span>
         </div>
         <div id="timerOptions" class="timer-grid" role="radiogroup" aria-label="Timer"></div>
       </section>
 
       <footer class="notice">
-        小さめの音量で使用してください。バイノーラルビートはイヤホン推奨です。運転中や危険を伴う作業中の使用は避けてください。効果には個人差があります。
+        小さめの音量で使用してください。運転中や危険を伴う作業中の使用は避けてください。効果には個人差があります。
       </footer>
     </main>
 

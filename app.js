@@ -9,198 +9,30 @@
   const CREATIVE_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.creativeRaw;
   const THOUGHTS_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.thoughtsMakeThingsRaw;
   if (!CREATIVE_RAW_DATA || !Array.isArray(CREATIVE_RAW_DATA.pulseLayers) || CREATIVE_RAW_DATA.pulseLayers.length !== 2) {
-    throw new Error("Creative Raw two-layer analysis data is unavailable.");
+    throw new Error("Creative two-layer analysis data is unavailable.");
   }
   if (!THOUGHTS_RAW_DATA || !Array.isArray(THOUGHTS_RAW_DATA.pulseLayers) || THOUGHTS_RAW_DATA.pulseLayers.length !== 2) {
-    throw new Error("Thoughts make things Raw two-layer analysis data is unavailable.");
+    throw new Error("Thoughts make things two-layer analysis data is unavailable.");
   }
 
   const BUSINESS_SECONDS = BUSINESS_DATA.durationSeconds;
-  const BUSINESS_TIMER_MINUTES = Math.round(BUSINESS_SECONDS) / 60;
-  const BUSINESS_CARRIER_FREQUENCY = BUSINESS_DATA.fixedToneHz;
   const BUSINESS_PULSE_LAYERS = BUSINESS_DATA.pulseLayers;
   const BUSINESS_PULSE_TIMELINE = BUSINESS_PULSE_LAYERS[0].rateTimeline;
   const BUSINESS_PITCH_TIMELINE = BUSINESS_DATA.originalPitchTimeline;
   const CREATIVE_RAW_SECONDS = CREATIVE_RAW_DATA.durationSeconds;
-  const CREATIVE_RAW_TIMER_MINUTES = Math.round(CREATIVE_RAW_SECONDS) / 60;
   const CREATIVE_RAW_PULSE_LAYERS = CREATIVE_RAW_DATA.pulseLayers;
   const CREATIVE_RAW_PULSE_TIMELINE = CREATIVE_RAW_PULSE_LAYERS[0].rateTimeline;
   const CREATIVE_RAW_PITCH_TIMELINE = CREATIVE_RAW_DATA.originalPitchTimeline;
   const THOUGHTS_RAW_SECONDS = THOUGHTS_RAW_DATA.durationSeconds;
-  const THOUGHTS_RAW_TIMER_MINUTES = Math.round(THOUGHTS_RAW_SECONDS) / 60;
   const THOUGHTS_RAW_PULSE_LAYERS = THOUGHTS_RAW_DATA.pulseLayers;
   const THOUGHTS_RAW_PULSE_TIMELINE = THOUGHTS_RAW_PULSE_LAYERS[0].rateTimeline;
   const THOUGHTS_RAW_PITCH_TIMELINE = THOUGHTS_RAW_DATA.originalPitchTimeline;
-  const CREATIVE_SECONDS = 20 * 60;
-  const CREATIVE_MINUTES = CREATIVE_SECONDS / 60;
-  const CREATIVE_CARRIER_FREQUENCY = 200;
-  const CREATIVE_PULSE_TIMELINE = [
-    { time: 0, rate: 7.25 },
-    { time: 30, rate: 8.5 },
-    { time: 60, rate: 7.43 },
-    { time: 90, rate: 8.93 },
-    { time: 120, rate: 10.17 },
-    { time: 150, rate: 2.53 },
-    { time: 180, rate: 8.87 },
-    { time: 210, rate: 10.57 },
-    { time: 240, rate: 7.87 },
-    { time: 270, rate: 7.37 },
-    { time: 300, rate: 6.83 },
-    { time: 330, rate: 6.37 },
-    { time: 360, rate: 5.87 },
-    { time: 390, rate: 5.33 },
-    { time: 420, rate: 4.83 },
-    { time: 450, rate: 4.37 },
-    { time: 480, rate: 3.93 },
-    { time: 510, rate: 3.67 },
-    { time: 540, rate: 3.43 },
-    { time: 570, rate: 3.17 },
-    { time: 600, rate: 9 },
-    { time: 630, rate: 9 },
-    { time: 660, rate: 3 },
-    { time: 690, rate: 3 },
-    { time: 720, rate: 3 },
-    { time: 750, rate: 9 },
-    { time: 780, rate: 9 },
-    { time: 810, rate: 9 },
-    { time: 840, rate: 9 },
-    { time: 870, rate: 9 },
-    { time: 900, rate: 3 },
-    { time: 930, rate: 9 },
-    { time: 960, rate: 9 },
-    { time: 990, rate: 9 },
-    { time: 1020, rate: 9 },
-    { time: 1050, rate: 9 },
-    { time: 1080, rate: 11.7 },
-    { time: 1110, rate: 2.87 },
-    { time: 1140, rate: 3.77 },
-    { time: 1170, rate: 4.34 },
-    { time: CREATIVE_SECONDS, rate: 4.34 }
-  ];
-  const CREATIVE_PITCH_TIMELINE = [
-    { time: 0, pitch: 75.46 },
-    { time: 30, pitch: 100.08 },
-    { time: 60, pitch: 99.89 },
-    { time: 90, pitch: 99.96 },
-    { time: 120, pitch: 69.36 },
-    { time: 150, pitch: 100.04 },
-    { time: 180, pitch: 69.31 },
-    { time: 210, pitch: 100.25 },
-    { time: 240, pitch: 65.29 },
-    { time: 270, pitch: 100.22 },
-    { time: 300, pitch: 100.4 },
-    { time: 330, pitch: 100.58 },
-    { time: 360, pitch: 100.49 },
-    { time: 390, pitch: 172.82 },
-    { time: 420, pitch: 69.4 },
-    { time: 450, pitch: 100.34 },
-    { time: 480, pitch: 100.33 },
-    { time: 510, pitch: 105.57 },
-    { time: 540, pitch: 100.74 },
-    { time: 570, pitch: 100.74 },
-    { time: 600, pitch: 125.1 },
-    { time: 630, pitch: 123.25 },
-    { time: 660, pitch: 100.36 },
-    { time: 690, pitch: 68 },
-    { time: 720, pitch: 100.51 },
-    { time: 750, pitch: 73.36 },
-    { time: 780, pitch: 100.69 },
-    { time: 810, pitch: 100.52 },
-    { time: 840, pitch: 100.2 },
-    { time: 870, pitch: 100.15 },
-    { time: 900, pitch: 225.51 },
-    { time: 930, pitch: 238.69 },
-    { time: 960, pitch: 163.69 },
-    { time: 990, pitch: 240.06 },
-    { time: 1020, pitch: 225.52 },
-    { time: 1050, pitch: 100.45 },
-    { time: 1080, pitch: 101.03 },
-    { time: 1110, pitch: 69.05 },
-    { time: 1140, pitch: 100.13 },
-    { time: 1170, pitch: 96.58 },
-    { time: CREATIVE_SECONDS, pitch: 96.58 }
-  ];
+  const DEFAULT_TONE_VOLUME = 50;
+  const DEFAULT_NOISE_VOLUME = 0;
 
   const MODES = {
-    focus: {
-      name: "Focus",
-      description: "作業・読書・デザイン作業向け",
-      left: 200,
-      right: 214,
-      difference: 14,
-      noise: "pink",
-      toneVolume: 24,
-      noiseVolume: 18
-    },
-    zone528: {
-      name: "Zone 528",
-      description: "528Hzをベースにした深い集中・ゾーン作業向け",
-      left: 528,
-      right: 542,
-      difference: 14,
-      noise: "pink",
-      toneVolume: 14,
-      noiseVolume: 16
-    },
-    relax: {
-      name: "Relax",
-      description: "休憩・ストレッチ・夜のリラックス向け",
-      left: 200,
-      right: 210,
-      difference: 10,
-      noise: "brown",
-      toneVolume: 22,
-      noiseVolume: 20
-    },
-    sleep: {
-      name: "Sleep",
-      description: "入眠・寝落ち向け",
-      left: 200,
-      right: 204,
-      difference: 4,
-      noise: "brown",
-      toneVolume: 12,
-      noiseVolume: 16
-    },
-    schumann: {
-      name: "Schumann",
-      description: "シューマン共振7.83Hzをイメージした瞑想・リラックス向け",
-      left: 200,
-      right: 207.83,
-      difference: 7.83,
-      noise: "brown",
-      toneVolume: 20,
-      noiseVolume: 18
-    },
-    hadou2950: {
+    business: {
       name: "Business",
-      description: "ビジネス能力の向上",
-      left: BUSINESS_CARRIER_FREQUENCY,
-      right: BUSINESS_CARRIER_FREQUENCY,
-      difference: 0,
-      pulseTimeline: BUSINESS_PULSE_TIMELINE,
-      durationSeconds: BUSINESS_SECONDS,
-      timerMinutes: BUSINESS_TIMER_MINUTES,
-      noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
-    },
-    hadou2950Pitch: {
-      name: "Business Pitch",
-      description: "ビジネス能力の向上",
-      left: BUSINESS_PITCH_TIMELINE[0].pitch,
-      right: BUSINESS_PITCH_TIMELINE[0].pitch,
-      difference: 0,
-      pitchTimeline: BUSINESS_PITCH_TIMELINE,
-      pulseTimeline: BUSINESS_PULSE_TIMELINE,
-      durationSeconds: BUSINESS_SECONDS,
-      timerMinutes: BUSINESS_TIMER_MINUTES,
-      noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
-    },
-    businessRaw: {
-      name: "Business Raw",
       description: "ビジネス能力の向上",
       left: BUSINESS_PITCH_TIMELINE[0].pitch,
       right: BUSINESS_PITCH_TIMELINE[0].pitch,
@@ -209,40 +41,12 @@
       pulseTimeline: BUSINESS_PULSE_TIMELINE,
       pulseLayers: BUSINESS_PULSE_LAYERS,
       durationSeconds: BUSINESS_SECONDS,
-      timerMinutes: BUSINESS_TIMER_MINUTES,
       noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
     },
     creative: {
       name: "Creative",
-      description: "クリエイティブ能力の向上",
-      left: CREATIVE_CARRIER_FREQUENCY,
-      right: CREATIVE_CARRIER_FREQUENCY,
-      difference: 0,
-      pulseTimeline: CREATIVE_PULSE_TIMELINE,
-      durationSeconds: CREATIVE_SECONDS,
-      timerMinutes: CREATIVE_MINUTES,
-      noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
-    },
-    creativePitch: {
-      name: "Creative Pitch",
-      description: "クリエイティブ能力の向上",
-      left: CREATIVE_PITCH_TIMELINE[0].pitch,
-      right: CREATIVE_PITCH_TIMELINE[0].pitch,
-      difference: 0,
-      pitchTimeline: CREATIVE_PITCH_TIMELINE,
-      pulseTimeline: CREATIVE_PULSE_TIMELINE,
-      durationSeconds: CREATIVE_SECONDS,
-      timerMinutes: CREATIVE_MINUTES,
-      noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
-    },
-    creativeRaw: {
-      name: "Creative Raw",
       description: "クリエイティブ能力の向上",
       left: CREATIVE_RAW_PITCH_TIMELINE[0].pitch,
       right: CREATIVE_RAW_PITCH_TIMELINE[0].pitch,
@@ -251,13 +55,12 @@
       pulseTimeline: CREATIVE_RAW_PULSE_TIMELINE,
       pulseLayers: CREATIVE_RAW_PULSE_LAYERS,
       durationSeconds: CREATIVE_RAW_SECONDS,
-      timerMinutes: CREATIVE_RAW_TIMER_MINUTES,
       noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
     },
-    thoughtsMakeThingsRaw: {
-      name: "Thoughts make things Raw",
+    thoughtsMakeThings: {
+      name: "Thoughts make things",
       description: "思考の現実化",
       left: THOUGHTS_RAW_PITCH_TIMELINE[0].pitch,
       right: THOUGHTS_RAW_PITCH_TIMELINE[0].pitch,
@@ -266,27 +69,15 @@
       pulseTimeline: THOUGHTS_RAW_PULSE_TIMELINE,
       pulseLayers: THOUGHTS_RAW_PULSE_LAYERS,
       durationSeconds: THOUGHTS_RAW_SECONDS,
-      timerMinutes: THOUGHTS_RAW_TIMER_MINUTES,
-      noise: "pink",
-      toneVolume: 10,
-      noiseVolume: 14
-    },
-    noiseOnly: {
-      name: "Noise Only",
-      description: "周波数なしでノイズだけ流すモード",
-      left: null,
-      right: null,
-      difference: null,
-      noise: "pink",
-      toneVolume: 0,
-      noiseVolume: 34
+      noise: "brown",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
     }
   };
 
   const TIMER_OPTIONS = [
     { label: "15分", minutes: 15 },
     { label: "20分", minutes: 20 },
-    { label: "30:01", minutes: BUSINESS_TIMER_MINUTES },
     { label: "30分", minutes: 30 },
     { label: "60分", minutes: 60 },
     { label: "90分", minutes: 90 },
@@ -294,12 +85,10 @@
   ];
 
   const STORAGE_KEY = "yoin-frequency-settings-v1";
-  const DEFAULTS_VERSION = 2;
+  const DEFAULTS_VERSION = 4;
   const MASTER_VOLUME_CURVE = 1.15;
   const TONE_GAIN_MAX = 0.104;
   const NOISE_GAIN_MAX = 0.169;
-  const SPEAKER_MODULATION_BASE = 0.56;
-  const SPEAKER_MODULATION_DEPTH = 0.18;
   const PULSE_GATE_BASE = 0.5;
   const PULSE_GATE_DEPTH = 0.45;
   const PULSE_GATE_SMOOTHING_HZ = 32;
@@ -309,14 +98,13 @@
 
   const defaultState = {
     defaultsVersion: DEFAULTS_VERSION,
-    mode: "focus",
+    mode: "business",
     layoutMode: "full",
-    listeningMode: "speaker",
     masterVolume: 70,
-    toneVolume: MODES.focus.toneVolume,
-    noiseVolume: MODES.focus.noiseVolume,
+    toneVolume: MODES.business.toneVolume,
+    noiseVolume: MODES.business.noiseVolume,
     timerMinutes: 0,
-    noiseType: MODES.focus.noise,
+    noiseType: MODES.business.noise,
     isPlaying: false
   };
 
@@ -325,6 +113,8 @@
   let graph = null;
   let timerInterval = null;
   let timerDeadline = null;
+  let loopProgressInterval = null;
+  let playbackStartedAt = null;
   let isStopping = false;
   let restartToken = 0;
 
@@ -342,10 +132,10 @@
     rightFrequency: document.getElementById("rightFrequency"),
     differenceFrequency: document.getElementById("differenceFrequency"),
     noiseLabel: document.getElementById("noiseLabel"),
+    loopStatus: document.getElementById("loopStatus"),
+    loopTime: document.getElementById("loopTime"),
+    loopProgressFill: document.getElementById("loopProgressFill"),
     playbackStatus: document.getElementById("playbackStatus"),
-    headphoneStatus: document.getElementById("headphoneStatus"),
-    headphonesModeButton: document.getElementById("headphonesModeButton"),
-    speakerModeButton: document.getElementById("speakerModeButton"),
     playButton: document.getElementById("playButton"),
     stopButton: document.getElementById("stopButton"),
     masterVolume: document.getElementById("masterVolume"),
@@ -354,9 +144,6 @@
     toneVolumeValue: document.getElementById("toneVolumeValue"),
     noiseVolume: document.getElementById("noiseVolume"),
     noiseVolumeValue: document.getElementById("noiseVolumeValue"),
-    pinkNoiseButton: document.getElementById("pinkNoiseButton"),
-    brownNoiseButton: document.getElementById("brownNoiseButton"),
-    mixedNoiseButton: document.getElementById("mixedNoiseButton"),
     timerOptions: document.getElementById("timerOptions"),
     remainingTime: document.getElementById("remainingTime")
   };
@@ -371,12 +158,12 @@
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       const mode = MODES[saved.mode] ? saved.mode : defaultState.mode;
-      const noiseType = ["pink", "brown", "mixed"].includes(saved.noiseType) ? saved.noiseType : MODES[mode].noise;
       const shouldApplyUpdatedDefaults = (Number(saved.defaultsVersion) || 1) < DEFAULTS_VERSION;
-      const savedListeningMode = saved.listeningMode === "speaker" ? "speaker" : "headphones";
       const savedTimerMinutes = TIMER_OPTIONS.some((item) => item.minutes === Number(saved.timerMinutes))
         ? Number(saved.timerMinutes)
         : defaultState.timerMinutes;
+      const savedToneVolume = clampNumber(saved.toneVolume, 0, 100, MODES[mode].toneVolume);
+      const savedNoiseVolume = clampNumber(saved.noiseVolume, 0, 100, MODES[mode].noiseVolume);
 
       return {
         ...defaultState,
@@ -384,11 +171,10 @@
         defaultsVersion: DEFAULTS_VERSION,
         mode,
         layoutMode: saved.layoutMode === "compact" ? "compact" : "full",
-        listeningMode: shouldApplyUpdatedDefaults ? defaultState.listeningMode : savedListeningMode,
-        noiseType,
+        noiseType: MODES[mode].noise,
         masterVolume: clampNumber(saved.masterVolume, 0, 100, defaultState.masterVolume),
-        toneVolume: clampNumber(saved.toneVolume, 0, 100, MODES[mode].toneVolume),
-        noiseVolume: clampNumber(saved.noiseVolume, 0, 100, MODES[mode].noiseVolume),
+        toneVolume: shouldApplyUpdatedDefaults ? MODES[mode].toneVolume : savedToneVolume,
+        noiseVolume: shouldApplyUpdatedDefaults ? MODES[mode].noiseVolume : savedNoiseVolume,
         timerMinutes: shouldApplyUpdatedDefaults ? defaultState.timerMinutes : savedTimerMinutes,
         isPlaying: false
       };
@@ -402,7 +188,6 @@
       defaultsVersion: DEFAULTS_VERSION,
       mode: state.mode,
       layoutMode: state.layoutMode,
-      listeningMode: state.listeningMode,
       masterVolume: state.masterVolume,
       toneVolume: state.toneVolume,
       noiseVolume: state.noiseVolume,
@@ -427,14 +212,6 @@
 
     elements.compactLayoutButton.addEventListener("click", () => {
       selectLayoutMode("compact");
-    });
-
-    elements.headphonesModeButton.addEventListener("click", () => {
-      selectListeningMode("headphones");
-    });
-
-    elements.speakerModeButton.addEventListener("click", () => {
-      selectListeningMode("speaker");
     });
 
     const handleMasterVolumeChange = (event) => {
@@ -467,17 +244,6 @@
     elements.noiseVolume.addEventListener("input", handleNoiseVolumeChange);
     elements.noiseVolume.addEventListener("change", handleNoiseVolumeChange);
 
-    elements.pinkNoiseButton.addEventListener("click", () => {
-      selectNoiseType("pink");
-    });
-
-    elements.brownNoiseButton.addEventListener("click", () => {
-      selectNoiseType("brown");
-    });
-
-    elements.mixedNoiseButton.addEventListener("click", () => {
-      selectNoiseType("mixed");
-    });
   }
 
   function selectLayoutMode(layoutMode) {
@@ -488,22 +254,6 @@
     state.layoutMode = layoutMode;
     saveState();
     applyLayoutToView();
-  }
-
-  async function selectListeningMode(listeningMode) {
-    if (!["headphones", "speaker"].includes(listeningMode) || state.listeningMode === listeningMode) {
-      return;
-    }
-
-    const wasPlaying = state.isPlaying || Boolean(graph);
-    state.listeningMode = listeningMode;
-    saveState();
-    renderModeButtons();
-    applyStateToView();
-
-    if (wasPlaying) {
-      await restartAudio();
-    }
   }
 
   function renderModeButtons() {
@@ -524,21 +274,8 @@
   }
 
   function getModeFrequencyLabel(mode) {
-    if (mode.difference === null) {
-      return `${formatNoiseName(mode.noise)} noise`;
-    }
-
-    if (mode.pulseTimeline) {
-      const toneLabel = mode.pitchTimeline ? `pitch ${formatPitchRange(mode.pitchTimeline)}` : formatHz(mode.left);
-      const layerLabel = mode.pulseLayers ? ` · ${mode.pulseLayers.length} layers` : "";
-      return `${toneLabel} / pulse ${formatModePulseRange(mode)}${layerLabel} / ${formatDurationSeconds(mode.durationSeconds)}`;
-    }
-
-    if (state.listeningMode === "speaker") {
-      return `${formatHz(mode.left)} mono / pulse ${formatHz(mode.difference)}`;
-    }
-
-    return `${formatHz(mode.left)} / ${formatHz(mode.right)} / diff ${formatHz(mode.difference)}`;
+    const toneLabel = mode.pitchTimeline ? `pitch ${formatPitchRange(mode.pitchTimeline)}` : formatHz(mode.left);
+    return `${toneLabel} / pulse ${formatModePulseRange(mode)} / ${formatDurationSeconds(mode.durationSeconds)}`;
   }
 
   function renderTimerButtons() {
@@ -572,28 +309,6 @@
     state.toneVolume = MODES[modeKey].toneVolume;
     state.noiseVolume = MODES[modeKey].noiseVolume;
     state.noiseType = MODES[modeKey].noise;
-    if (MODES[modeKey].timerMinutes) {
-      state.timerMinutes = MODES[modeKey].timerMinutes;
-    }
-    saveState();
-    applyStateToView();
-
-    if (wasPlaying) {
-      await restartAudio();
-    }
-  }
-
-  async function selectNoiseType(noiseType) {
-    if (!["pink", "brown", "mixed"].includes(noiseType)) {
-      return;
-    }
-
-    if (noiseType === state.noiseType) {
-      return;
-    }
-
-    const wasPlaying = state.isPlaying || Boolean(graph);
-    state.noiseType = noiseType;
     saveState();
     applyStateToView();
 
@@ -624,6 +339,7 @@
       state.isPlaying = true;
       isStopping = false;
       startTimer();
+      startLoopProgress();
       applyStateToView();
 
       const startAt = now + 0.03;
@@ -633,6 +349,7 @@
       rampGain(graph.masterGain.gain, 1, now, 1.4);
     } catch (error) {
       state.isPlaying = false;
+      clearLoopProgress();
       cleanupGraph(graph);
       graph = null;
       applyStateToView();
@@ -646,6 +363,7 @@
     }
 
     clearTimer();
+    clearLoopProgress();
 
     if (!graph) {
       state.isPlaying = false;
@@ -717,11 +435,7 @@
     masterGain.connect(context.destination);
 
     if (mode.left !== null && mode.right !== null && state.toneVolume > 0) {
-      if (state.listeningMode === "speaker") {
-        createSpeakerTone(context, mode, toneGain, sources, cleanupTasks);
-      } else {
-        createHeadphoneTone(context, mode, toneGain, sources, cleanupTasks);
-      }
+      createSpeakerTone(context, mode, toneGain, sources, cleanupTasks);
     }
 
     if (state.noiseVolume > 0) {
@@ -742,68 +456,6 @@
     };
   }
 
-  function createHeadphoneTone(context, mode, destination, sources, cleanupTasks) {
-    const merger = context.createChannelMerger(2);
-    const leftOscillator = context.createOscillator();
-    const rightOscillator = context.createOscillator();
-
-    leftOscillator.type = "sine";
-    rightOscillator.type = "sine";
-    leftOscillator.frequency.setValueAtTime(mode.left, context.currentTime);
-    rightOscillator.frequency.setValueAtTime(mode.right, context.currentTime);
-
-    if (mode.pitchTimeline) {
-      applyPitchTimeline(context, [leftOscillator.frequency, rightOscillator.frequency], mode.pitchTimeline, cleanupTasks);
-    }
-
-    if (mode.pulseLayers) {
-      mode.pulseLayers.forEach((layer) => {
-        const leftPulseGain = context.createGain();
-        const rightPulseGain = context.createGain();
-        const leftMixGain = context.createGain();
-        const rightMixGain = context.createGain();
-
-        applyPulseTimeline(
-          context,
-          [leftPulseGain.gain, rightPulseGain.gain],
-          layer.rateTimeline,
-          sources,
-          cleanupTasks
-        );
-        applyGainTimeline(
-          context,
-          [leftMixGain.gain, rightMixGain.gain],
-          layer.gainTimeline,
-          cleanupTasks
-        );
-
-        leftOscillator.connect(leftPulseGain);
-        rightOscillator.connect(rightPulseGain);
-        leftPulseGain.connect(leftMixGain);
-        rightPulseGain.connect(rightMixGain);
-        leftMixGain.connect(merger, 0, 0);
-        rightMixGain.connect(merger, 0, 1);
-      });
-    } else {
-      const leftGain = context.createGain();
-      const rightGain = context.createGain();
-
-      leftGain.gain.setValueAtTime(1, context.currentTime);
-      rightGain.gain.setValueAtTime(1, context.currentTime);
-      if (mode.pulseTimeline) {
-        applyPulseTimeline(context, [leftGain.gain, rightGain.gain], mode.pulseTimeline, sources, cleanupTasks);
-      }
-
-      leftOscillator.connect(leftGain);
-      rightOscillator.connect(rightGain);
-      leftGain.connect(merger, 0, 0);
-      rightGain.connect(merger, 0, 1);
-    }
-    merger.connect(destination);
-
-    sources.push(leftOscillator, rightOscillator);
-  }
-
   function createSpeakerTone(context, mode, destination, sources, cleanupTasks) {
     const carrier = context.createOscillator();
 
@@ -814,40 +466,17 @@
       applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks);
     }
 
-    if (mode.pulseLayers) {
-      mode.pulseLayers.forEach((layer) => {
-        const pulseGain = context.createGain();
-        const mixGain = context.createGain();
+    mode.pulseLayers.forEach((layer) => {
+      const pulseGain = context.createGain();
+      const mixGain = context.createGain();
 
-        applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
-        applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
-        carrier.connect(pulseGain);
-        pulseGain.connect(mixGain);
-        mixGain.connect(destination);
-      });
-    } else {
-      const modulationGain = context.createGain();
+      applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
+      applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
+      carrier.connect(pulseGain);
+      pulseGain.connect(mixGain);
+      mixGain.connect(destination);
+    });
 
-      modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
-      if (mode.pulseTimeline) {
-        applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
-      }
-
-      carrier.connect(modulationGain);
-      modulationGain.connect(destination);
-
-      if (mode.difference > 0 && !mode.pulseTimeline) {
-        const lfo = context.createOscillator();
-        const lfoDepth = context.createGain();
-
-        lfo.type = "sine";
-        lfo.frequency.setValueAtTime(mode.difference, context.currentTime);
-        lfoDepth.gain.setValueAtTime(SPEAKER_MODULATION_DEPTH, context.currentTime);
-        lfo.connect(lfoDepth);
-        lfoDepth.connect(modulationGain.gain);
-        sources.push(lfo);
-      }
-    }
     sources.push(carrier);
   }
 
@@ -978,8 +607,6 @@
       const data = buffer.getChannelData(channel);
       if (noiseType === "brown") {
         fillBrownNoise(data);
-      } else if (noiseType === "mixed") {
-        fillMixedNoise(data);
       } else {
         fillPinkNoise(data);
       }
@@ -1020,18 +647,6 @@
     }
   }
 
-  function fillMixedNoise(data) {
-    const pink = new Float32Array(data.length);
-    const brown = new Float32Array(data.length);
-
-    fillPinkNoise(pink);
-    fillBrownNoise(brown);
-
-    for (let i = 0; i < data.length; i += 1) {
-      data[i] = clampSample((pink[i] + brown[i]) * 0.58);
-    }
-  }
-
   function updateLiveGains() {
     if (!graph || !audioContext) {
       return;
@@ -1069,10 +684,6 @@
   }
 
   function getToneGainValue() {
-    if (MODES[state.mode].left === null) {
-      return 0;
-    }
-
     return scaleGain(state.toneVolume, TONE_GAIN_MAX) * getMasterVolumeScale();
   }
 
@@ -1115,53 +726,61 @@
     timerDeadline = null;
   }
 
+  function startLoopProgress() {
+    clearLoopProgress();
+    playbackStartedAt = Date.now();
+    applyLoopProgressToView();
+    loopProgressInterval = window.setInterval(applyLoopProgressToView, 500);
+  }
+
+  function clearLoopProgress() {
+    if (loopProgressInterval) {
+      window.clearInterval(loopProgressInterval);
+      loopProgressInterval = null;
+    }
+    playbackStartedAt = null;
+    applyLoopProgressToView();
+  }
+
+  function applyLoopProgressToView() {
+    const mode = MODES[state.mode];
+    const durationSeconds = Math.max(1, mode.durationSeconds || 1);
+    const elapsedSeconds = state.isPlaying && playbackStartedAt
+      ? Math.max(0, (Date.now() - playbackStartedAt) / 1000)
+      : 0;
+    const cycleIndex = Math.floor(elapsedSeconds / durationSeconds) + 1;
+    const cycleElapsed = elapsedSeconds % durationSeconds;
+    const progress = Math.min(1, Math.max(0, cycleElapsed / durationSeconds));
+
+    elements.loopStatus.textContent = `${cycleIndex}周目`;
+    elements.loopTime.textContent = `${formatDurationSeconds(cycleElapsed)} / ${formatDurationSeconds(durationSeconds)}`;
+    elements.loopProgressFill.style.width = `${(progress * 100).toFixed(1)}%`;
+  }
+
   function applyStateToView() {
     const mode = MODES[state.mode];
-    const isNoiseOnly = mode.left === null;
-    const isSpeakerMode = state.listeningMode === "speaker";
 
     elements.body.classList.toggle("is-playing", state.isPlaying);
-    elements.body.classList.toggle("is-speaker-mode", isSpeakerMode);
     elements.currentModeName.textContent = mode.name;
     elements.currentModeDescription.textContent = mode.description;
 
-    if (mode.pulseTimeline) {
-      elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
-      elements.secondaryFrequencyLabel.textContent = "Output";
-      elements.differenceFrequencyLabel.textContent = mode.pulseLayers ? `Pulse x${mode.pulseLayers.length}` : "Pulse";
-      elements.leftFrequency.textContent = mode.pitchTimeline ? formatPitchRange(mode.pitchTimeline) : formatHz(mode.left);
-      elements.rightFrequency.textContent = isSpeakerMode ? "Mono" : "L/R";
-      elements.differenceFrequency.textContent = formatModePulseRange(mode);
-    } else {
-      elements.primaryFrequencyLabel.textContent = isSpeakerMode ? "Tone" : "Left";
-      elements.secondaryFrequencyLabel.textContent = isSpeakerMode ? "Output" : "Right";
-      elements.differenceFrequencyLabel.textContent = isSpeakerMode ? "Pulse" : "Diff";
-      elements.leftFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.left);
-      elements.rightFrequency.textContent = isNoiseOnly ? "--" : isSpeakerMode ? "Mono" : formatHz(mode.right);
-      elements.differenceFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.difference);
-    }
+    elements.primaryFrequencyLabel.textContent = "Pitch";
+    elements.secondaryFrequencyLabel.textContent = "Output";
+    elements.differenceFrequencyLabel.textContent = `Pulse x${mode.pulseLayers.length}`;
+    elements.leftFrequency.textContent = formatPitchRange(mode.pitchTimeline);
+    elements.rightFrequency.textContent = "Mono";
+    elements.differenceFrequency.textContent = formatModePulseRange(mode);
 
-    elements.noiseLabel.textContent = `${formatNoiseName(state.noiseType)} noise`;
+    elements.noiseLabel.textContent = state.noiseVolume > 0 ? `${formatNoiseName(state.noiseType)} noise` : "Noise off";
     elements.playbackStatus.textContent = state.isPlaying ? "再生中" : isStopping ? "停止中" : "停止中";
-    elements.headphoneStatus.textContent = isNoiseOnly
-      ? "スピーカー可"
-      : isSpeakerMode ? "スピーカー用" : "イヤホン用";
     elements.playButton.disabled = state.isPlaying || isStopping;
     elements.stopButton.disabled = (!state.isPlaying && !graph) || isStopping;
-    elements.toneVolume.disabled = isNoiseOnly;
 
     document.querySelectorAll(".mode-button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
     });
 
-    [elements.pinkNoiseButton, elements.brownNoiseButton, elements.mixedNoiseButton].forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.noise === state.noiseType));
-    });
-
-    [elements.headphonesModeButton, elements.speakerModeButton].forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.listeningMode === state.listeningMode));
-    });
-
+    applyLoopProgressToView();
     applyVolumeToView();
     applyTimerToView();
     applyLayoutToView();
@@ -1254,7 +873,7 @@
   }
 
   function formatDurationSeconds(seconds) {
-    if (!seconds) {
+    if (seconds === null || seconds === undefined) {
       return "--";
     }
 
@@ -1267,9 +886,6 @@
   function formatNoiseName(noiseType) {
     if (noiseType === "brown") {
       return "Brown";
-    }
-    if (noiseType === "mixed") {
-      return "Mixed";
     }
     return "Pink";
   }
