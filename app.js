@@ -31,6 +31,56 @@
   const DEFAULT_NOISE_VOLUME = 0;
 
   const MODES = {
+    focus: {
+      name: "Focus",
+      description: "作業・読書・デザイン作業向け",
+      left: 200,
+      right: 200,
+      difference: 14,
+      noise: "pink",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    zone528: {
+      name: "Zone 528",
+      description: "528Hzをベースにした深い集中・ゾーン作業向け",
+      left: 528,
+      right: 528,
+      difference: 14,
+      noise: "pink",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    relax: {
+      name: "Relax",
+      description: "休憩・ストレッチ・夜のリラックス向け",
+      left: 200,
+      right: 200,
+      difference: 10,
+      noise: "brown",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    sleep: {
+      name: "Sleep",
+      description: "入眠・寝落ち向け",
+      left: 200,
+      right: 200,
+      difference: 4,
+      noise: "brown",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    schumann: {
+      name: "Schumann",
+      description: "シューマン共振7.83Hzをイメージした瞑想・リラックス向け",
+      left: 200,
+      right: 200,
+      difference: 7.83,
+      noise: "brown",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
     business: {
       name: "Business",
       description: "ビジネス能力の向上",
@@ -72,7 +122,26 @@
       noise: "brown",
       toneVolume: DEFAULT_TONE_VOLUME,
       noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    noiseOnly: {
+      name: "Noise Only",
+      description: "周波数なしでノイズだけ流すモード",
+      left: null,
+      right: null,
+      difference: null,
+      noise: "pink",
+      toneVolume: 0,
+      noiseVolume: DEFAULT_NOISE_VOLUME
     }
+  };
+
+  const MODE_ALIASES = {
+    hadou2950: "business",
+    hadou2950Pitch: "business",
+    businessRaw: "business",
+    creativePitch: "creative",
+    creativeRaw: "creative",
+    thoughtsMakeThingsRaw: "thoughtsMakeThings"
   };
 
   const TIMER_OPTIONS = [
@@ -85,10 +154,12 @@
   ];
 
   const STORAGE_KEY = "yoin-frequency-settings-v1";
-  const DEFAULTS_VERSION = 4;
+  const DEFAULTS_VERSION = 5;
   const MASTER_VOLUME_CURVE = 1.15;
   const TONE_GAIN_MAX = 0.104;
   const NOISE_GAIN_MAX = 0.169;
+  const SPEAKER_MODULATION_BASE = 0.56;
+  const SPEAKER_MODULATION_DEPTH = 0.18;
   const PULSE_GATE_BASE = 0.5;
   const PULSE_GATE_DEPTH = 0.45;
   const PULSE_GATE_SMOOTHING_HZ = 32;
@@ -98,13 +169,13 @@
 
   const defaultState = {
     defaultsVersion: DEFAULTS_VERSION,
-    mode: "business",
+    mode: "focus",
     layoutMode: "full",
     masterVolume: 70,
-    toneVolume: MODES.business.toneVolume,
-    noiseVolume: MODES.business.noiseVolume,
+    toneVolume: MODES.focus.toneVolume,
+    noiseVolume: MODES.focus.noiseVolume,
     timerMinutes: 0,
-    noiseType: MODES.business.noise,
+    noiseType: MODES.focus.noise,
     isPlaying: false
   };
 
@@ -144,6 +215,10 @@
     toneVolumeValue: document.getElementById("toneVolumeValue"),
     noiseVolume: document.getElementById("noiseVolume"),
     noiseVolumeValue: document.getElementById("noiseVolumeValue"),
+    pinkNoiseButton: document.getElementById("pinkNoiseButton"),
+    brownNoiseButton: document.getElementById("brownNoiseButton"),
+    whiteNoiseButton: document.getElementById("whiteNoiseButton"),
+    mixedNoiseButton: document.getElementById("mixedNoiseButton"),
     timerOptions: document.getElementById("timerOptions"),
     remainingTime: document.getElementById("remainingTime")
   };
@@ -157,7 +232,8 @@
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const mode = MODES[saved.mode] ? saved.mode : defaultState.mode;
+      const mode = normalizeModeKey(saved.mode) || defaultState.mode;
+      const noiseType = isNoiseType(saved.noiseType) ? saved.noiseType : MODES[mode].noise;
       const shouldApplyUpdatedDefaults = (Number(saved.defaultsVersion) || 1) < DEFAULTS_VERSION;
       const savedTimerMinutes = TIMER_OPTIONS.some((item) => item.minutes === Number(saved.timerMinutes))
         ? Number(saved.timerMinutes)
@@ -171,7 +247,7 @@
         defaultsVersion: DEFAULTS_VERSION,
         mode,
         layoutMode: saved.layoutMode === "compact" ? "compact" : "full",
-        noiseType: MODES[mode].noise,
+        noiseType: shouldApplyUpdatedDefaults ? MODES[mode].noise : noiseType,
         masterVolume: clampNumber(saved.masterVolume, 0, 100, defaultState.masterVolume),
         toneVolume: shouldApplyUpdatedDefaults ? MODES[mode].toneVolume : savedToneVolume,
         noiseVolume: shouldApplyUpdatedDefaults ? MODES[mode].noiseVolume : savedNoiseVolume,
@@ -244,6 +320,21 @@
     elements.noiseVolume.addEventListener("input", handleNoiseVolumeChange);
     elements.noiseVolume.addEventListener("change", handleNoiseVolumeChange);
 
+    elements.pinkNoiseButton.addEventListener("click", () => {
+      selectNoiseType("pink");
+    });
+
+    elements.brownNoiseButton.addEventListener("click", () => {
+      selectNoiseType("brown");
+    });
+
+    elements.whiteNoiseButton.addEventListener("click", () => {
+      selectNoiseType("white");
+    });
+
+    elements.mixedNoiseButton.addEventListener("click", () => {
+      selectNoiseType("mixed");
+    });
   }
 
   function selectLayoutMode(layoutMode) {
@@ -274,8 +365,13 @@
   }
 
   function getModeFrequencyLabel(mode) {
+    if (mode.left === null || mode.right === null) {
+      return `${formatNoiseName(mode.noise)} noise`;
+    }
+
     const toneLabel = mode.pitchTimeline ? `pitch ${formatPitchRange(mode.pitchTimeline)}` : formatHz(mode.left);
-    return `${toneLabel} / pulse ${formatModePulseRange(mode)} / ${formatDurationSeconds(mode.durationSeconds)}`;
+    const durationLabel = mode.durationSeconds ? ` / ${formatDurationSeconds(mode.durationSeconds)}` : "";
+    return `${toneLabel} / pulse ${formatModePulseRange(mode)}${durationLabel}`;
   }
 
   function renderTimerButtons() {
@@ -309,6 +405,21 @@
     state.toneVolume = MODES[modeKey].toneVolume;
     state.noiseVolume = MODES[modeKey].noiseVolume;
     state.noiseType = MODES[modeKey].noise;
+    saveState();
+    applyStateToView();
+
+    if (wasPlaying) {
+      await restartAudio();
+    }
+  }
+
+  async function selectNoiseType(noiseType) {
+    if (!isNoiseType(noiseType) || state.noiseType === noiseType) {
+      return;
+    }
+
+    const wasPlaying = state.isPlaying || Boolean(graph);
+    state.noiseType = noiseType;
     saveState();
     applyStateToView();
 
@@ -438,13 +549,11 @@
       createSpeakerTone(context, mode, toneGain, sources, cleanupTasks);
     }
 
-    if (state.noiseVolume > 0) {
-      const noiseSource = context.createBufferSource();
-      noiseSource.buffer = createNoiseBuffer(context, state.noiseType);
-      noiseSource.loop = true;
-      noiseSource.connect(noiseGain);
-      sources.push(noiseSource);
-    }
+    const noiseSource = context.createBufferSource();
+    noiseSource.buffer = createNoiseBuffer(context, state.noiseType);
+    noiseSource.loop = true;
+    noiseSource.connect(noiseGain);
+    sources.push(noiseSource);
 
     return {
       context,
@@ -466,16 +575,40 @@
       applyPitchTimeline(context, [carrier.frequency], mode.pitchTimeline, cleanupTasks);
     }
 
-    mode.pulseLayers.forEach((layer) => {
-      const pulseGain = context.createGain();
-      const mixGain = context.createGain();
+    if (mode.pulseLayers) {
+      mode.pulseLayers.forEach((layer) => {
+        const pulseGain = context.createGain();
+        const mixGain = context.createGain();
 
-      applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
-      applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
-      carrier.connect(pulseGain);
-      pulseGain.connect(mixGain);
-      mixGain.connect(destination);
-    });
+        applyPulseTimeline(context, [pulseGain.gain], layer.rateTimeline, sources, cleanupTasks);
+        applyGainTimeline(context, [mixGain.gain], layer.gainTimeline, cleanupTasks);
+        carrier.connect(pulseGain);
+        pulseGain.connect(mixGain);
+        mixGain.connect(destination);
+      });
+    } else {
+      const modulationGain = context.createGain();
+
+      modulationGain.gain.setValueAtTime(SPEAKER_MODULATION_BASE, context.currentTime);
+      if (mode.pulseTimeline) {
+        applyPulseTimeline(context, [modulationGain.gain], mode.pulseTimeline, sources, cleanupTasks);
+      }
+
+      carrier.connect(modulationGain);
+      modulationGain.connect(destination);
+
+      if (mode.difference > 0 && !mode.pulseTimeline) {
+        const lfo = context.createOscillator();
+        const lfoDepth = context.createGain();
+
+        lfo.type = "sine";
+        lfo.frequency.setValueAtTime(mode.difference, context.currentTime);
+        lfoDepth.gain.setValueAtTime(SPEAKER_MODULATION_DEPTH, context.currentTime);
+        lfo.connect(lfoDepth);
+        lfoDepth.connect(modulationGain.gain);
+        sources.push(lfo);
+      }
+    }
 
     sources.push(carrier);
   }
@@ -607,6 +740,10 @@
       const data = buffer.getChannelData(channel);
       if (noiseType === "brown") {
         fillBrownNoise(data);
+      } else if (noiseType === "white") {
+        fillWhiteNoise(data);
+      } else if (noiseType === "mixed") {
+        fillMixedNoise(data);
       } else {
         fillPinkNoise(data);
       }
@@ -647,6 +784,26 @@
     }
   }
 
+  function fillWhiteNoise(data) {
+    for (let i = 0; i < data.length; i += 1) {
+      data[i] = clampSample((Math.random() * 2 - 1) * 0.42);
+    }
+  }
+
+  function fillMixedNoise(data) {
+    const pink = new Float32Array(data.length);
+    const brown = new Float32Array(data.length);
+    const white = new Float32Array(data.length);
+
+    fillPinkNoise(pink);
+    fillBrownNoise(brown);
+    fillWhiteNoise(white);
+
+    for (let i = 0; i < data.length; i += 1) {
+      data[i] = clampSample((pink[i] + brown[i] + white[i]) * 0.42);
+    }
+  }
+
   function updateLiveGains() {
     if (!graph || !audioContext) {
       return;
@@ -684,6 +841,10 @@
   }
 
   function getToneGainValue() {
+    if (MODES[state.mode].left === null) {
+      return 0;
+    }
+
     return scaleGain(state.toneVolume, TONE_GAIN_MAX) * getMasterVolumeScale();
   }
 
@@ -744,7 +905,14 @@
 
   function applyLoopProgressToView() {
     const mode = MODES[state.mode];
-    const durationSeconds = Math.max(1, mode.durationSeconds || 1);
+    if (!mode.durationSeconds) {
+      elements.loopStatus.textContent = "通常再生";
+      elements.loopTime.textContent = "--";
+      elements.loopProgressFill.style.width = "0%";
+      return;
+    }
+
+    const durationSeconds = Math.max(1, mode.durationSeconds);
     const elapsedSeconds = state.isPlaying && playbackStartedAt
       ? Math.max(0, (Date.now() - playbackStartedAt) / 1000)
       : 0;
@@ -759,25 +927,40 @@
 
   function applyStateToView() {
     const mode = MODES[state.mode];
+    const hasTone = mode.left !== null && mode.right !== null;
 
     elements.body.classList.toggle("is-playing", state.isPlaying);
     elements.currentModeName.textContent = mode.name;
     elements.currentModeDescription.textContent = mode.description;
 
-    elements.primaryFrequencyLabel.textContent = "Pitch";
-    elements.secondaryFrequencyLabel.textContent = "Output";
-    elements.differenceFrequencyLabel.textContent = `Pulse x${mode.pulseLayers.length}`;
-    elements.leftFrequency.textContent = formatPitchRange(mode.pitchTimeline);
-    elements.rightFrequency.textContent = "Mono";
-    elements.differenceFrequency.textContent = formatModePulseRange(mode);
+    if (mode.pulseTimeline || mode.pulseLayers) {
+      elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
+      elements.secondaryFrequencyLabel.textContent = "Output";
+      elements.differenceFrequencyLabel.textContent = mode.pulseLayers ? `Pulse x${mode.pulseLayers.length}` : "Pulse";
+      elements.leftFrequency.textContent = mode.pitchTimeline ? formatPitchRange(mode.pitchTimeline) : formatHz(mode.left);
+      elements.rightFrequency.textContent = "Mono";
+      elements.differenceFrequency.textContent = formatModePulseRange(mode);
+    } else {
+      elements.primaryFrequencyLabel.textContent = "Tone";
+      elements.secondaryFrequencyLabel.textContent = "Output";
+      elements.differenceFrequencyLabel.textContent = "Pulse";
+      elements.leftFrequency.textContent = hasTone ? formatHz(mode.left) : "--";
+      elements.rightFrequency.textContent = hasTone ? "Mono" : "--";
+      elements.differenceFrequency.textContent = hasTone ? formatHz(mode.difference) : "--";
+    }
 
     elements.noiseLabel.textContent = state.noiseVolume > 0 ? `${formatNoiseName(state.noiseType)} noise` : "Noise off";
     elements.playbackStatus.textContent = state.isPlaying ? "再生中" : isStopping ? "停止中" : "停止中";
     elements.playButton.disabled = state.isPlaying || isStopping;
     elements.stopButton.disabled = (!state.isPlaying && !graph) || isStopping;
+    elements.toneVolume.disabled = !hasTone;
 
     document.querySelectorAll(".mode-button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
+    });
+
+    document.querySelectorAll("[data-noise]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.noise === state.noiseType));
     });
 
     applyLoopProgressToView();
@@ -844,7 +1027,10 @@
 
   function formatModePulseRange(mode) {
     if (!mode.pulseLayers) {
-      return formatPulseRange(mode.pulseTimeline);
+      if (mode.pulseTimeline) {
+        return formatPulseRange(mode.pulseTimeline);
+      }
+      return formatHz(mode.difference);
     }
 
     return formatPulseRange(mode.pulseLayers.flatMap((layer) => layer.rateTimeline));
@@ -887,7 +1073,24 @@
     if (noiseType === "brown") {
       return "Brown";
     }
+    if (noiseType === "white") {
+      return "White";
+    }
+    if (noiseType === "mixed") {
+      return "Mixed";
+    }
     return "Pink";
+  }
+
+  function normalizeModeKey(modeKey) {
+    if (MODES[modeKey]) {
+      return modeKey;
+    }
+    return MODE_ALIASES[modeKey] || null;
+  }
+
+  function isNoiseType(noiseType) {
+    return ["pink", "brown", "white", "mixed"].includes(noiseType);
   }
 
   function formatRemainingTime(milliseconds) {

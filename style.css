@@ -465,15 +465,21 @@ input[type="range"]:disabled {
   opacity: 0.45;
 }
 
+.segmented-control,
 .timer-grid {
   display: grid;
   gap: 8px;
+}
+
+.segmented-control {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .timer-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.segmented-control button,
 .timer-grid button {
   min-height: 46px;
   border: 1px solid var(--line);
@@ -485,6 +491,7 @@ input[type="range"]:disabled {
   cursor: pointer;
 }
 
+.segmented-control button[aria-pressed="true"],
 .timer-grid button[aria-pressed="true"] {
   border-color: var(--line-strong);
   color: var(--text);
@@ -723,6 +730,7 @@ body.is-compact-ui .mode-button span {
   display: none;
 }
 
+body.is-compact-ui .segmented-control,
 body.is-compact-ui .timer-grid {
   gap: 6px;
 }
@@ -731,6 +739,7 @@ body.is-compact-ui .timer-grid {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+body.is-compact-ui .segmented-control button,
 body.is-compact-ui .timer-grid button {
   min-height: 34px;
   padding: 0 4px;
@@ -777,6 +786,7 @@ body.is-compact-ui .notice {
     min-height: 34px;
   }
 
+  body.is-compact-ui .segmented-control button,
   body.is-compact-ui .timer-grid button {
     min-height: 30px;
   }

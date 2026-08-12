@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#070912">
-    <meta name="description" content="YOIN frequency is a speaker-only raw frequency loop player.">
+    <meta name="description" content="YOIN frequency is a speaker-only frequency and noise player.">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="YOIN frequency">
@@ -21,7 +21,7 @@
         <div class="brand-block">
           <p class="studio-mark">YOIN studio</p>
           <h1>YOIN frequency</h1>
-          <p class="tagline">raw frequency loops for YOIN sessions</p>
+          <p class="tagline">frequency and noise loops for YOIN sessions</p>
         </div>
         <div class="view-switch" role="group" aria-label="Display mode">
           <button id="fullLayoutButton" type="button" data-layout="full" aria-pressed="true">Full</button>
@@ -39,28 +39,28 @@
         </div>
 
         <p id="current-mode-label" class="section-kicker">Current mode</p>
-        <h2 id="currentModeName">Business</h2>
-        <p id="currentModeDescription" class="mode-description">ビジネス能力の向上</p>
+        <h2 id="currentModeName">Focus</h2>
+        <p id="currentModeDescription" class="mode-description">作業・読書・デザイン作業向け</p>
 
         <dl class="frequency-grid">
           <div>
-            <dt id="primaryFrequencyLabel">Pitch</dt>
-            <dd id="leftFrequency">95Hz</dd>
+            <dt id="primaryFrequencyLabel">Tone</dt>
+            <dd id="leftFrequency">200Hz</dd>
           </div>
           <div>
             <dt id="secondaryFrequencyLabel">Output</dt>
             <dd id="rightFrequency">Mono</dd>
           </div>
           <div>
-            <dt id="differenceFrequencyLabel">Pulse x2</dt>
-            <dd id="differenceFrequency">2.03-11.96Hz</dd>
+            <dt id="differenceFrequencyLabel">Pulse</dt>
+            <dd id="differenceFrequency">14Hz</dd>
           </div>
         </dl>
 
         <div class="loop-progress" aria-live="polite">
           <div class="loop-progress-topline">
-            <span id="loopStatus">1周目</span>
-            <span id="loopTime">00:00 / 30:01</span>
+            <span id="loopStatus">通常再生</span>
+            <span id="loopTime">--</span>
           </div>
           <div class="loop-progress-track" aria-hidden="true">
             <div id="loopProgressFill" class="loop-progress-fill"></div>
@@ -110,6 +110,19 @@
           <span id="noiseLabel" class="panel-note">Noise off</span>
         </div>
         <div id="modeGrid" class="mode-grid" role="list"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="noise-heading">
+        <div class="panel-heading">
+          <h2 id="noise-heading">Noise type</h2>
+          <span class="panel-note">Noise volume 0%</span>
+        </div>
+        <div class="segmented-control" role="radiogroup" aria-label="Noise type">
+          <button id="pinkNoiseButton" type="button" data-noise="pink" aria-pressed="true">Pink</button>
+          <button id="brownNoiseButton" type="button" data-noise="brown" aria-pressed="false">Brown</button>
+          <button id="whiteNoiseButton" type="button" data-noise="white" aria-pressed="false">White</button>
+          <button id="mixedNoiseButton" type="button" data-noise="mixed" aria-pressed="false">Mix</button>
+        </div>
       </section>
 
       <section class="panel" aria-labelledby="timer-heading">

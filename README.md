@@ -1,8 +1,8 @@
 # YOIN frequency
 
-YOIN frequencyは、音源解析から作ったYOIN用の周波数メニューを再生する、HTML/CSS/JavaScriptだけのシンプルなPWAです。
+YOIN frequencyは、YOIN用の周波数音とノイズを再生する、HTML/CSS/JavaScriptだけのシンプルなPWAです。
 
-現在のアプリはスピーカー再生専用です。Pitchは音の高さ、Pulseは「トトト」の間隔として分けて扱い、各メニューの解析カーブをループ再生します。
+現在のアプリはスピーカー再生専用です。Business / Creative / Thoughts make thingsは解析済みの2レイヤー版だけを通常名で残し、Pitchは音の高さ、Pulseは「トトト」の間隔として分けて扱います。
 
 ## ローカルでの起動方法
 
@@ -23,13 +23,21 @@ GitHub Pagesで公開する場合は、`index.html`、`style.css`、`app.js`、`
 
 ## モード
 
-| Mode | 用途 | Pitch | Pulse | ノイズ種別 |
+| Mode | 用途 | Tone / Pitch | Pulse | ノイズ種別 |
 | --- | --- | ---: | ---: | --- |
+| Focus | 作業・読書・デザイン作業向け | 200Hz | 14Hz | Pink |
+| Zone 528 | 528Hzをベースにした深い集中・ゾーン作業向け | 528Hz | 14Hz | Pink |
+| Relax | 休憩・ストレッチ・夜のリラックス向け | 200Hz | 10Hz | Brown |
+| Sleep | 入眠・寝落ち向け | 200Hz | 4Hz | Brown |
+| Schumann | シューマン共振7.83Hzをイメージした瞑想・リラックス向け | 200Hz | 7.83Hz | Brown |
 | Business | ビジネス能力の向上 | 95Hz | 約2.03〜11.96Hzの2レイヤー可変パルス | Pink |
 | Creative | クリエイティブ能力の向上 | 約69.49〜248.75Hzの可変Pitch | 約2.03〜11.96Hzの2レイヤー可変パルス | Pink |
 | Thoughts make things | 思考の現実化 | 95Hz | 約2.03〜11.96Hzの2レイヤー可変パルス | Brown |
+| Noise Only | 周波数なしでノイズだけ流すモード | - | - | Pink |
 
-ノイズ音量の初期値は0%なので、最初はノイズなしで再生されます。Noiseを上げた場合だけ、モードごとに選ばれたノイズ種別が鳴ります。
+## ノイズ
+
+Noise volumeの初期値は0%です。Noise type欄ではPink / Brown / White / Mixを選べます。モードを選び直したときは、そのモードに合うノイズ種別へ戻ります。
 
 ## 初期設定
 
@@ -41,21 +49,24 @@ GitHub Pagesで公開する場合は、`index.html`、`style.css`、`app.js`、`
 
 ## 再生位置
 
-各メニューは解析された長さで1周として扱います。無制限タイマーでは終端後に先頭へ戻り、画面上のバーで現在の周回数と周回内の再生位置を表示します。
+Business / Creative / Thoughts make thingsは解析された長さで1周として扱います。無制限タイマーでは終端後に先頭へ戻り、画面上のバーで現在の周回数と周回内の再生位置を表示します。
+
+通常の固定周波数モードとNoise Onlyでは、再生位置バーは「通常再生」と表示します。
 
 ## 表示モード
 
 - Full: 情報量が多い通常UIです。
-- Compact: iPhoneの画面内で再生、停止、音量、モード、タイマーを操作しやすい圧縮UIです。
+- Compact: iPhoneの画面内で再生、停止、音量、モード、ノイズ、タイマーを操作しやすい圧縮UIです。
 
 ## 技術メモ
 
 - HTML/CSS/JavaScriptのみ
 - Web Audio API使用
 - スピーカー専用のMono再生
-- Pitch timelineは`OscillatorNode.frequency`へループスケジュール
-- Pulse timelineは2本のGain変調レイヤーとして再現
-- ノイズはPink/Brownを内部生成し、モードごとに自動選択
+- 固定周波数モードは1本のサイン波をLFOでゆらがせる
+- 解析モードのPitch timelineは`OscillatorNode.frequency`へループスケジュール
+- 解析モードのPulse timelineは2本のGain変調レイヤーとして再現
+- ノイズはPink / Brown / White / Mixを内部生成
 - 再生時はマスター音量0からフェードイン、停止時とタイマー終了時はフェードアウト
 - `localStorage`で前回の設定を保存
 - `manifest.json`と`service-worker.js`でPWA対応

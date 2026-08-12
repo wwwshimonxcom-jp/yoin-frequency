@@ -1,4 +1,4 @@
-const CACHE_NAME = "yoin-frequency-v26";
+const CACHE_NAME = "yoin-frequency-v27";
 const APP_ASSETS = [
   "./",
   "./index.html",
