@@ -1,18 +1,20 @@
 import AVFAudio
 import Combine
 import Foundation
+import UIKit
 
 @MainActor
 final class PlayerStore: ObservableObject {
     @Published private(set) var presets: [AudioPresetDefinition]
     @Published private(set) var selectedPreset: AudioPresetDefinition
     @Published private(set) var noiseType: NoiseType
-    @Published private(set) var listeningMode: ListeningMode
     @Published private(set) var masterVolume: Double
     @Published private(set) var toneVolume: Double
     @Published private(set) var noiseVolume: Double
     @Published private(set) var timerChoice: TimerChoice
     @Published private(set) var remainingSeconds: TimeInterval?
+    @Published private(set) var programElapsedSeconds: TimeInterval = 0
+    @Published private(set) var programCycleIndex = 1
     @Published private(set) var isPlaying = false
     @Published private(set) var isStopping = false
     @Published var errorMessage: String?
@@ -20,26 +22,33 @@ final class PlayerStore: ObservableObject {
     private enum DefaultsKey {
         static let presetID = "ios.presetID"
         static let noiseType = "ios.noiseType"
-        static let listeningMode = "ios.listeningMode"
         static let masterVolume = "ios.masterVolume"
         static let toneVolume = "ios.toneVolume"
         static let noiseVolume = "ios.noiseVolume"
         static let timerMinutes = "ios.timerMinutes"
+        static let defaultsVersion = "ios.defaultsVersion"
     }
+
+    private static let currentDefaultsVersion = 2
 
     private let audioEngine = FrequencyAudioEngine()
     private let defaults: UserDefaults
     private var countdownTask: Task<Void, Never>?
+    private var programProgressTask: Task<Void, Never>?
     private var configurationRestartTask: Task<Void, Never>?
     private var lastConfigurationRestartAt: Date?
     private var lastConfigurationRouteSignature: String?
     private var timerDeadline: Date?
     private var programStartedAt: Date?
+    private var programAnchorElapsedSeconds: TimeInterval = 0
     private var cancellables = Set<AnyCancellable>()
     private var shouldResumeAfterInterruption = false
     private var wantsPlayback = false
     private var isInterrupted = false
     private var operationGeneration = 0
+#if targetEnvironment(macCatalyst)
+    private var playbackActivity: NSObjectProtocol?
+#endif
 
     var isPlaybackRequested: Bool {
         wantsPlayback
@@ -50,18 +59,23 @@ final class PlayerStore: ObservableObject {
         let loadedPresets = PresetLibrary.load()
         presets = loadedPresets
 
-        let savedPresetID = defaults.string(forKey: DefaultsKey.presetID)
+        let savedPresetID = Self.migratedPresetID(
+            defaults.string(forKey: DefaultsKey.presetID)
+        )
         let initialPreset = loadedPresets.first(where: { $0.id == savedPresetID })
+            ?? loadedPresets.first(where: { $0.id == "focus" })
             ?? loadedPresets.first
             ?? .fallbackFocus
         selectedPreset = initialPreset
 
-        noiseType = defaults.string(forKey: DefaultsKey.noiseType)
-            .flatMap(NoiseType.init(rawValue:))
-            ?? initialPreset.defaultNoise
-        listeningMode = defaults.string(forKey: DefaultsKey.listeningMode)
-            .flatMap(ListeningMode.init(rawValue:))
-            ?? .headphones
+        let shouldApplyUpdatedDefaults = defaults.integer(forKey: DefaultsKey.defaultsVersion)
+            < Self.currentDefaultsVersion
+
+        noiseType = shouldApplyUpdatedDefaults
+            ? initialPreset.defaultNoise
+            : defaults.string(forKey: DefaultsKey.noiseType)
+                .flatMap(NoiseType.init(rawValue:))
+                ?? initialPreset.defaultNoise
         masterVolume = Self.savedVolume(
             defaults: defaults,
             key: DefaultsKey.masterVolume,
@@ -70,17 +84,29 @@ final class PlayerStore: ObservableObject {
         toneVolume = Self.savedVolume(
             defaults: defaults,
             key: DefaultsKey.toneVolume,
-            fallback: initialPreset.defaultToneVolume
+            fallback: initialPreset.defaultToneVolume,
+            forceFallback: shouldApplyUpdatedDefaults
         )
         noiseVolume = Self.savedVolume(
             defaults: defaults,
             key: DefaultsKey.noiseVolume,
-            fallback: initialPreset.defaultNoiseVolume
+            fallback: initialPreset.defaultNoiseVolume,
+            forceFallback: shouldApplyUpdatedDefaults
         )
-        timerChoice = TimerChoice.fromStoredValue(
-            defaults.object(forKey: DefaultsKey.timerMinutes) as? Int
-        )
+        timerChoice = shouldApplyUpdatedDefaults
+            ? .unlimited
+            : TimerChoice.fromStoredValue(
+                defaults.object(forKey: DefaultsKey.timerMinutes) as? Int
+            )
         remainingSeconds = timerChoice.duration
+
+        defaults.set(Self.currentDefaultsVersion, forKey: DefaultsKey.defaultsVersion)
+        defaults.set(selectedPreset.id, forKey: DefaultsKey.presetID)
+        defaults.set(noiseType.rawValue, forKey: DefaultsKey.noiseType)
+        defaults.set(masterVolume, forKey: DefaultsKey.masterVolume)
+        defaults.set(toneVolume, forKey: DefaultsKey.toneVolume)
+        defaults.set(noiseVolume, forKey: DefaultsKey.noiseVolume)
+        defaults.set(timerChoice.rawValue, forKey: DefaultsKey.timerMinutes)
 
         observeAudioSession()
     }
@@ -88,13 +114,19 @@ final class PlayerStore: ObservableObject {
     var frequencySummary: [(label: String, value: String)] {
         guard selectedPreset.hasTone else {
             return [
-                ("Left", "--"),
-                ("Right", "--"),
-                ("Diff", "--")
+                ("Tone", "--"),
+                ("Pulse", "--")
             ]
         }
 
         if selectedPreset.hasDynamicPulse {
+            let pulseTimeline = selectedPreset.pulseLayers.isEmpty
+                ? selectedPreset.pulseTimeline
+                : selectedPreset.pulseLayers.flatMap(\.rateTimeline)
+            let pulseLabel = selectedPreset.pulseLayers.isEmpty
+                ? "Pulse"
+                : "Pulse x\(selectedPreset.pulseLayers.count)"
+
             return [
                 (
                     selectedPreset.hasDynamicPitch ? "Pitch" : "Tone",
@@ -102,24 +134,26 @@ final class PlayerStore: ObservableObject {
                         ? Self.formatRange(selectedPreset.pitchTimeline)
                         : Self.formatHz(selectedPreset.leftFrequency)
                 ),
-                ("Output", listeningMode == .speaker ? "Mono" : "L/R"),
-                ("Pulse", Self.formatRange(selectedPreset.pulseTimeline))
-            ]
-        }
-
-        if listeningMode == .speaker {
-            return [
-                ("Tone", Self.formatHz(selectedPreset.leftFrequency)),
-                ("Output", "Mono"),
-                ("Pulse", Self.formatHz(selectedPreset.differenceFrequency))
+                (pulseLabel, Self.formatRange(pulseTimeline))
             ]
         }
 
         return [
-            ("Left", Self.formatHz(selectedPreset.leftFrequency)),
-            ("Right", Self.formatHz(selectedPreset.rightFrequency)),
-            ("Diff", Self.formatHz(selectedPreset.differenceFrequency))
+            ("Tone", Self.formatHz(selectedPreset.leftFrequency)),
+            ("Pulse", Self.formatHz(selectedPreset.differenceFrequency))
         ]
+    }
+
+    var programDurationSeconds: TimeInterval? {
+        guard
+            let duration = selectedPreset.durationSeconds,
+            duration.isFinite,
+            duration > 0
+        else {
+            return nil
+        }
+
+        return duration
     }
 
     func play() {
@@ -142,13 +176,17 @@ final class PlayerStore: ObservableObject {
             wantsPlayback = true
             isPlaying = true
             shouldResumeAfterInterruption = false
+            beginPlaybackActivityIfNeeded()
             startNewTimer()
+            startProgramProgressUpdates()
         } catch {
             audioEngine.stopImmediately()
             wantsPlayback = false
             isPlaying = false
             isStopping = false
             programStartedAt = nil
+            resetProgramProgress()
+            endPlaybackActivity()
             errorMessage = error.localizedDescription
         }
     }
@@ -163,8 +201,9 @@ final class PlayerStore: ObservableObject {
         isPlaying = false
         isStopping = true
         shouldResumeAfterInterruption = false
+        endPlaybackActivity()
         clearTimer(resetDisplay: true)
-        programStartedAt = nil
+        resetProgramProgress()
 
         Task { [weak self] in
             guard let self else { return }
@@ -181,10 +220,7 @@ final class PlayerStore: ObservableObject {
         toneVolume = preset.defaultToneVolume
         noiseVolume = preset.defaultNoiseVolume
 
-        if let recommendedTimer = preset.recommendedTimerChoice {
-            timerChoice = recommendedTimer
-            remainingSeconds = recommendedTimer.duration
-        }
+        resetProgramProgress()
 
         markProgramForFreshStartIfInterrupted()
         persistSettings()
@@ -193,19 +229,14 @@ final class PlayerStore: ObservableObject {
 
     func selectNoiseType(_ type: NoiseType) {
         guard type != noiseType, !isStopping else { return }
+        let savedProgramElapsed = currentProgramElapsed
         noiseType = type
         defaults.set(type.rawValue, forKey: DefaultsKey.noiseType)
         markProgramForFreshStartIfInterrupted()
-        restartIfNeeded(preserveDeadline: false)
-    }
-
-    func selectListeningMode(_ mode: ListeningMode) {
-        guard mode != listeningMode, !isStopping else { return }
-        listeningMode = mode
-        defaults.set(mode.rawValue, forKey: DefaultsKey.listeningMode)
-        if selectedPreset.hasTone {
-            restartIfNeeded(preserveDeadline: true)
-        }
+        restartIfNeeded(
+            preserveDeadline: false,
+            programOffset: savedProgramElapsed
+        )
     }
 
     func setMasterVolume(_ value: Double) {
@@ -246,11 +277,22 @@ final class PlayerStore: ObservableObject {
         }
     }
 
+    func seekProgram(to seconds: TimeInterval) {
+        guard let duration = programDurationSeconds, !isStopping else { return }
+
+        let target = min(duration, max(0, seconds.isFinite ? seconds : 0))
+        programAnchorElapsedSeconds = target
+        programStartedAt = isPlaying ? Date() : nil
+        publishProgramProgress(elapsed: target)
+
+        guard isPlaying else { return }
+        restartIfNeeded(preserveDeadline: true, programOffset: target)
+    }
+
     private var configuration: AudioEngineConfiguration {
         AudioEngineConfiguration(
             preset: selectedPreset,
             noiseType: noiseType,
-            listeningMode: listeningMode,
             masterVolume: masterVolume,
             toneVolume: toneVolume,
             noiseVolume: noiseVolume,
@@ -259,21 +301,33 @@ final class PlayerStore: ObservableObject {
     }
 
     private var currentProgramOffset: TimeInterval {
-        guard let programStartedAt else { return 0 }
-        return max(0, Date().timeIntervalSince(programStartedAt))
+        normalizedProgramOffset(currentProgramElapsed)
     }
 
-    private func restartIfNeeded(preserveDeadline: Bool) {
+    private var currentProgramElapsed: TimeInterval {
+        let runningElapsed = programStartedAt.map { Date().timeIntervalSince($0) } ?? 0
+        return max(0, programAnchorElapsedSeconds + runningElapsed)
+    }
+
+    private func restartIfNeeded(
+        preserveDeadline: Bool,
+        programOffset explicitProgramOffset: TimeInterval? = nil
+    ) {
         guard isPlaying else { return }
         configurationRestartTask?.cancel()
         configurationRestartTask = nil
         operationGeneration += 1
         let expectedGeneration = operationGeneration
         let savedDeadline = preserveDeadline ? timerDeadline : nil
-        let savedProgramStartedAt = preserveDeadline ? programStartedAt : nil
+        let savedProgramElapsed = explicitProgramOffset
+            ?? (preserveDeadline ? currentProgramElapsed : 0)
+        programProgressTask?.cancel()
+        programProgressTask = nil
+        programAnchorElapsedSeconds = savedProgramElapsed
+        programStartedAt = nil
+        publishProgramProgress(elapsed: savedProgramElapsed)
         if !preserveDeadline {
             timerDeadline = nil
-            programStartedAt = nil
             remainingSeconds = timerChoice.duration
         }
         countdownTask?.cancel()
@@ -287,26 +341,30 @@ final class PlayerStore: ObservableObject {
             guard self.operationGeneration == expectedGeneration else { return }
 
             do {
-                self.programStartedAt = savedProgramStartedAt ?? Date()
+                self.programAnchorElapsedSeconds = savedProgramElapsed
+                self.programStartedAt = Date()
                 try self.audioEngine.start(configuration: self.configuration)
                 guard self.operationGeneration == expectedGeneration else { return }
                 self.markAudioGraphStarted()
                 self.wantsPlayback = true
                 self.isPlaying = true
                 self.isStopping = false
+                self.beginPlaybackActivityIfNeeded()
                 if preserveDeadline {
                     self.timerDeadline = savedDeadline
                     self.resumeTimerFromCurrentDeadline()
                 } else {
                     self.startNewTimer()
                 }
+                self.startProgramProgressUpdates()
             } catch {
                 self.audioEngine.stopImmediately()
                 self.wantsPlayback = false
                 self.isPlaying = false
                 self.isStopping = false
-                self.programStartedAt = nil
+                self.resetProgramProgress()
                 self.clearTimer(resetDisplay: true)
+                self.endPlaybackActivity()
                 self.errorMessage = error.localizedDescription
             }
         }
@@ -314,9 +372,61 @@ final class PlayerStore: ObservableObject {
 
     private func markProgramForFreshStartIfInterrupted() {
         guard wantsPlayback, !isPlaying else { return }
-        programStartedAt = nil
+        resetProgramProgress()
         timerDeadline = nil
         remainingSeconds = timerChoice.duration
+    }
+
+    private func startProgramProgressUpdates() {
+        programProgressTask?.cancel()
+        programProgressTask = nil
+        publishProgramProgress(elapsed: currentProgramElapsed)
+
+        guard programDurationSeconds != nil else { return }
+
+        let clock = ContinuousClock()
+        programProgressTask = Task { [weak self] in
+            guard let self else { return }
+
+            while !Task.isCancelled {
+                self.publishProgramProgress(elapsed: self.currentProgramElapsed)
+                try? await clock.sleep(for: .milliseconds(250))
+            }
+        }
+    }
+
+    private func resetProgramProgress() {
+        programProgressTask?.cancel()
+        programProgressTask = nil
+        programStartedAt = nil
+        programAnchorElapsedSeconds = 0
+        programElapsedSeconds = 0
+        programCycleIndex = 1
+    }
+
+    private func publishProgramProgress(elapsed: TimeInterval) {
+        guard let duration = programDurationSeconds else {
+            programElapsedSeconds = 0
+            programCycleIndex = 1
+            return
+        }
+
+        let safeElapsed = max(0, elapsed)
+        if selectedPreset.loop {
+            programCycleIndex = Int(safeElapsed / duration) + 1
+            programElapsedSeconds = safeElapsed.truncatingRemainder(dividingBy: duration)
+        } else {
+            programCycleIndex = 1
+            programElapsedSeconds = min(duration, safeElapsed)
+        }
+    }
+
+    private func normalizedProgramOffset(_ elapsed: TimeInterval) -> TimeInterval {
+        guard let duration = programDurationSeconds else { return max(0, elapsed) }
+        let safeElapsed = max(0, elapsed)
+        return selectedPreset.loop
+            ? safeElapsed.truncatingRemainder(dividingBy: duration)
+            : min(duration, safeElapsed)
     }
 
     private func applyLiveVolumes() {
@@ -379,7 +489,8 @@ final class PlayerStore: ObservableObject {
         wantsPlayback = false
         isPlaying = false
         isStopping = true
-        programStartedAt = nil
+        endPlaybackActivity()
+        resetProgramProgress()
         await audioEngine.stop(fadeDuration: 5)
 
         guard operationGeneration == expectedGeneration else { return }
@@ -398,12 +509,14 @@ final class PlayerStore: ObservableObject {
     }
 
     private func observeAudioSession() {
+#if !targetEnvironment(macCatalyst)
         NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] notification in
                 self?.handleInterruption(notification)
             }
             .store(in: &cancellables)
+#endif
 
         NotificationCenter.default.publisher(for: AVAudioSession.mediaServicesWereLostNotification)
             .receive(on: RunLoop.main)
@@ -427,6 +540,24 @@ final class PlayerStore: ObservableObject {
             .store(in: &cancellables)
     }
 
+    private func beginPlaybackActivityIfNeeded() {
+#if targetEnvironment(macCatalyst)
+        guard playbackActivity == nil else { return }
+        playbackActivity = ProcessInfo.processInfo.beginActivity(
+            options: [.automaticTerminationDisabled, .suddenTerminationDisabled],
+            reason: "YOIN Frequency is playing audio"
+        )
+#endif
+    }
+
+    private func endPlaybackActivity() {
+#if targetEnvironment(macCatalyst)
+        guard let playbackActivity else { return }
+        ProcessInfo.processInfo.endActivity(playbackActivity)
+        self.playbackActivity = nil
+#endif
+    }
+
     private func handleInterruption(_ notification: Notification) {
         guard
             let rawType = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
@@ -446,6 +577,11 @@ final class PlayerStore: ObservableObject {
             isStopping = false
             countdownTask?.cancel()
             countdownTask = nil
+            programAnchorElapsedSeconds = currentProgramElapsed
+            programStartedAt = nil
+            programProgressTask?.cancel()
+            programProgressTask = nil
+            publishProgramProgress(elapsed: programAnchorElapsedSeconds)
             audioEngine.stopImmediately(deactivateSession: false)
 
         case .ended:
@@ -455,39 +591,42 @@ final class PlayerStore: ObservableObject {
             guard shouldResumeAfterInterruption, options.contains(.shouldResume) else {
                 shouldResumeAfterInterruption = false
                 wantsPlayback = false
-                programStartedAt = nil
+                resetProgramProgress()
                 clearTimer(resetDisplay: true)
+                endPlaybackActivity()
                 return
             }
 
             shouldResumeAfterInterruption = false
             guard timerDeadline.map({ $0 > Date() }) ?? true else {
                 wantsPlayback = false
-                programStartedAt = nil
+                resetProgramProgress()
                 clearTimer(resetDisplay: true)
+                endPlaybackActivity()
                 return
             }
 
-            let startsFreshProgram = programStartedAt == nil
-            if startsFreshProgram {
-                programStartedAt = Date()
-            }
+            let startsFreshTimer = timerDeadline == nil
+            programStartedAt = Date()
 
             do {
                 try audioEngine.start(configuration: configuration)
                 markAudioGraphStarted()
                 wantsPlayback = true
                 isPlaying = true
-                if startsFreshProgram {
+                beginPlaybackActivityIfNeeded()
+                if startsFreshTimer {
                     startNewTimer()
                 } else {
                     resumeTimerFromCurrentDeadline()
                 }
+                startProgramProgressUpdates()
             } catch {
                 audioEngine.stopImmediately()
                 wantsPlayback = false
-                programStartedAt = nil
+                resetProgramProgress()
                 clearTimer(resetDisplay: true)
+                endPlaybackActivity()
                 errorMessage = error.localizedDescription
             }
 
@@ -505,6 +644,11 @@ final class PlayerStore: ObservableObject {
         isStopping = false
         countdownTask?.cancel()
         countdownTask = nil
+        programAnchorElapsedSeconds = currentProgramElapsed
+        programStartedAt = nil
+        programProgressTask?.cancel()
+        programProgressTask = nil
+        publishProgramProgress(elapsed: programAnchorElapsedSeconds)
         audioEngine.stopImmediately(deactivateSession: false)
     }
 
@@ -512,34 +656,35 @@ final class PlayerStore: ObservableObject {
         guard wantsPlayback, !isInterrupted else { return }
         guard timerDeadline.map({ $0 > Date() }) ?? true else {
             wantsPlayback = false
-            programStartedAt = nil
+            resetProgramProgress()
             clearTimer(resetDisplay: true)
+            endPlaybackActivity()
             return
         }
 
         operationGeneration += 1
-        let startsFreshProgram = programStartedAt == nil
-        if startsFreshProgram {
-            programStartedAt = Date()
-        }
+        let startsFreshTimer = timerDeadline == nil
+        programStartedAt = Date()
 
         do {
             try audioEngine.start(configuration: configuration)
             markAudioGraphStarted()
             isPlaying = true
             isStopping = false
-            if startsFreshProgram {
+            if startsFreshTimer {
                 startNewTimer()
             } else {
                 resumeTimerFromCurrentDeadline()
             }
+            startProgramProgressUpdates()
         } catch {
             audioEngine.stopImmediately()
             wantsPlayback = false
             isPlaying = false
             isStopping = false
-            programStartedAt = nil
+            resetProgramProgress()
             clearTimer(resetDisplay: true)
+            endPlaybackActivity()
             errorMessage = error.localizedDescription
         }
     }
@@ -607,7 +752,6 @@ final class PlayerStore: ObservableObject {
     private func persistSettings() {
         defaults.set(selectedPreset.id, forKey: DefaultsKey.presetID)
         defaults.set(noiseType.rawValue, forKey: DefaultsKey.noiseType)
-        defaults.set(listeningMode.rawValue, forKey: DefaultsKey.listeningMode)
         defaults.set(masterVolume, forKey: DefaultsKey.masterVolume)
         defaults.set(toneVolume, forKey: DefaultsKey.toneVolume)
         defaults.set(noiseVolume, forKey: DefaultsKey.noiseVolume)
@@ -617,10 +761,24 @@ final class PlayerStore: ObservableObject {
     private static func savedVolume(
         defaults: UserDefaults,
         key: String,
-        fallback: Double
+        fallback: Double,
+        forceFallback: Bool = false
     ) -> Double {
-        guard defaults.object(forKey: key) != nil else { return fallback }
+        guard !forceFallback, defaults.object(forKey: key) != nil else { return fallback }
         return clampVolume(defaults.double(forKey: key))
+    }
+
+    private static func migratedPresetID(_ id: String?) -> String? {
+        switch id {
+        case "hadou2950", "hadou2950Pitch", "businessRaw":
+            return "business"
+        case "creativePitch", "creativeRaw":
+            return "creative"
+        case "thoughtsMakeThingsRaw":
+            return "thoughtsMakeThings"
+        default:
+            return id
+        }
     }
 
     private static func clampVolume(_ value: Double) -> Double {

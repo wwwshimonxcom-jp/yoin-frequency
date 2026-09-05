@@ -1,10 +1,10 @@
 import AVFAudio
+import CoreAudio
 import Foundation
 
 struct AudioEngineConfiguration: Equatable {
     let preset: AudioPresetDefinition
     let noiseType: NoiseType
-    let listeningMode: ListeningMode
     let masterVolume: Double
     let toneVolume: Double
     let noiseVolume: Double
@@ -13,6 +13,9 @@ struct AudioEngineConfiguration: Equatable {
 
 @MainActor
 final class FrequencyAudioEngine {
+    private static let toneGainMaximum = 0.104
+    private static let noiseGainMaximum = 0.169
+
     enum AudioEngineError: LocalizedError {
         case unsupportedAudioFormat
         case missingChannelData
@@ -76,7 +79,6 @@ final class FrequencyAudioEngine {
 
             let preparedTone = Self.makeToneSource(
                 preset: configuration.preset,
-                listeningMode: configuration.listeningMode,
                 startOffsetSeconds: configuration.startOffsetSeconds,
                 format: format
             )
@@ -92,14 +94,14 @@ final class FrequencyAudioEngine {
                 newEngine.connect(preparedTone.mixer, to: newEngine.mainMixerNode, format: format)
                 preparedTone.mixer.outputVolume = Self.branchGain(
                     percent: configuration.toneVolume,
-                    maximum: 0.08
+                    maximum: Self.toneGainMaximum
                 )
             }
             newNoisePlayer.scheduleBuffer(preparedNoiseBuffer, at: nil, options: [.loops])
 
             newNoisePlayer.volume = Self.branchGain(
                 percent: configuration.noiseVolume,
-                maximum: 0.13
+                maximum: Self.noiseGainMaximum
             )
 
             desiredMasterGain = Self.masterGain(percent: configuration.masterVolume)
@@ -137,8 +139,14 @@ final class FrequencyAudioEngine {
 
     func updateVolumes(master: Double, tone: Double, noise: Double) {
         desiredMasterGain = Self.masterGain(percent: master)
-        toneMixer?.outputVolume = Self.branchGain(percent: tone, maximum: 0.08)
-        noisePlayer?.volume = Self.branchGain(percent: noise, maximum: 0.13)
+        toneMixer?.outputVolume = Self.branchGain(
+            percent: tone,
+            maximum: Self.toneGainMaximum
+        )
+        noisePlayer?.volume = Self.branchGain(
+            percent: noise,
+            maximum: Self.noiseGainMaximum
+        )
 
         if isRunning, !isFadingOut {
             fadeTask?.cancel()
@@ -239,28 +247,23 @@ final class FrequencyAudioEngine {
     // isolation from FrequencyAudioEngine and trap when audio rendering begins.
     nonisolated private static func makeToneSource(
         preset: AudioPresetDefinition,
-        listeningMode: ListeningMode,
         startOffsetSeconds: TimeInterval,
         format: AVAudioFormat
     ) -> (source: AVAudioSourceNode, mixer: AVAudioMixerNode, state: ToneRenderState)? {
-        guard
-            let leftFrequency = preset.leftFrequency,
-            let rightFrequency = preset.rightFrequency
-        else {
+        guard let leftFrequency = preset.leftFrequency else {
             return nil
         }
 
         let state = ToneRenderState(
             sampleRate: format.sampleRate,
-            listeningMode: listeningMode,
             leftFrequency: leftFrequency,
-            rightFrequency: rightFrequency,
             differenceFrequency: preset.differenceFrequency ?? 0,
             startOffsetSeconds: startOffsetSeconds,
             durationSeconds: preset.durationSeconds,
             loops: preset.loop,
             pulseTimeline: preset.pulseTimeline,
-            pitchTimeline: preset.pitchTimeline
+            pitchTimeline: preset.pitchTimeline,
+            pulseLayers: preset.pulseLayers
         )
         let source = AVAudioSourceNode(format: format) { _, _, frameCount, audioBufferList in
             state.render(frameCount: frameCount, audioBufferList: audioBufferList)
@@ -346,9 +349,7 @@ private final class ToneRenderState: @unchecked Sendable {
     private static let pulseSmoothingFrequency = 32.0
 
     private let sampleRate: Double
-    private let listeningMode: ListeningMode
     private let leftFrequency: Double
-    private let rightFrequency: Double
     private let differenceFrequency: Double
     private let durationSeconds: Double
     private let loops: Bool
@@ -356,39 +357,52 @@ private final class ToneRenderState: @unchecked Sendable {
 
     private var pulseTimeline: TimelineCursor
     private var pitchTimeline: TimelineCursor
+    private var pulseLayers: [PulseLayerRenderState]
     private var elapsedSeconds = 0.0
     private var leftPhase = 0.0
-    private var rightPhase = 0.0
     private var speakerModulationPhase = 0.0
     private var pulsePhase = 0.0
     private var smoothedPulseGain = pulseGateBase
 
     init(
         sampleRate: Double,
-        listeningMode: ListeningMode,
         leftFrequency: Double,
-        rightFrequency: Double,
         differenceFrequency: Double,
         startOffsetSeconds: TimeInterval,
         durationSeconds: Double?,
         loops: Bool,
         pulseTimeline: [TimelinePoint],
-        pitchTimeline: [TimelinePoint]
+        pitchTimeline: [TimelinePoint],
+        pulseLayers: [PulseLayerDefinition]
     ) {
-        self.sampleRate = max(1, sampleRate)
-        self.listeningMode = listeningMode
+        let safeSampleRate = max(1, sampleRate)
+        self.sampleRate = safeSampleRate
         self.leftFrequency = max(0, leftFrequency)
-        self.rightFrequency = max(0, rightFrequency)
         self.differenceFrequency = max(0, differenceFrequency)
         elapsedSeconds = max(0, startOffsetSeconds)
         self.loops = loops
         self.pulseTimeline = TimelineCursor(points: pulseTimeline)
         self.pitchTimeline = TimelineCursor(points: pitchTimeline)
+        self.pulseLayers = pulseLayers.map {
+            PulseLayerRenderState(
+                rateTimeline: $0.rateTimeline,
+                gainTimeline: $0.gainTimeline,
+                sampleRate: safeSampleRate
+            )
+        }
 
-        let lastTimelineTime = max(
+        let legacyTimelineTime = max(
             pulseTimeline.last?.time ?? 0,
             pitchTimeline.last?.time ?? 0
         )
+        let layerTimelineTime = pulseLayers.reduce(0) { partialResult, layer in
+            max(
+                partialResult,
+                layer.rateTimeline.last?.time ?? 0,
+                layer.gainTimeline.last?.time ?? 0
+            )
+        }
+        let lastTimelineTime = max(legacyTimelineTime, layerTimelineTime)
         self.durationSeconds = max(0, durationSeconds ?? lastTimelineTime)
         pulseSmoothingCoefficient = 1 - exp(
             (-Self.twoPi * Self.pulseSmoothingFrequency) / self.sampleRate
@@ -406,43 +420,30 @@ private final class ToneRenderState: @unchecked Sendable {
             let timelineTime = currentTimelineTime
             let hasPitchTimeline = !pitchTimeline.isEmpty
             let hasPulseTimeline = !pulseTimeline.isEmpty
+            let hasPulseLayers = !pulseLayers.isEmpty
             let pitch = pitchTimeline.value(at: timelineTime, fallback: leftFrequency)
-            let pulseGain = hasPulseTimeline ? nextPulseGain(at: timelineTime) : 1
+            let legacyPulseGain = hasPulseTimeline ? nextPulseGain(at: timelineTime) : 1
 
-            let leftSample: Float
-            let rightSample: Float
+            let currentFrequency = hasPitchTimeline ? pitch : leftFrequency
+            let modulation: Double
 
-            switch listeningMode {
-            case .headphones:
-                let currentLeftFrequency = hasPitchTimeline ? pitch : leftFrequency
-                let currentRightFrequency = hasPitchTimeline ? pitch : rightFrequency
-                leftSample = Float(sin(leftPhase) * pulseGain)
-                rightSample = Float(sin(rightPhase) * pulseGain)
-                advancePhase(&leftPhase, frequency: currentLeftFrequency)
-                advancePhase(&rightPhase, frequency: currentRightFrequency)
-
-            case .speaker:
-                let currentFrequency = hasPitchTimeline ? pitch : leftFrequency
-                let modulation: Double
-
-                if hasPulseTimeline {
-                    modulation = pulseGain
-                } else if differenceFrequency > 0 {
-                    modulation = 0.56 + (sin(speakerModulationPhase) * 0.18)
-                    advancePhase(&speakerModulationPhase, frequency: differenceFrequency)
-                } else {
-                    modulation = 0.56
-                }
-
-                let sample = Float(sin(leftPhase) * modulation)
-                leftSample = sample
-                rightSample = sample
-                advancePhase(&leftPhase, frequency: currentFrequency)
+            if hasPulseLayers {
+                modulation = nextLayeredPulseGain(at: timelineTime)
+            } else if hasPulseTimeline {
+                modulation = legacyPulseGain
+            } else if differenceFrequency > 0 {
+                modulation = 0.56 + (sin(speakerModulationPhase) * 0.18)
+                advancePhase(&speakerModulationPhase, frequency: differenceFrequency)
+            } else {
+                modulation = 0.56
             }
 
+            let sample = Float(sin(leftPhase) * modulation)
+            advancePhase(&leftPhase, frequency: currentFrequency)
+
             write(
-                left: leftSample,
-                right: rightSample,
+                left: sample,
+                right: sample,
                 frame: frame,
                 buffers: buffers
             )
@@ -469,6 +470,12 @@ private final class ToneRenderState: @unchecked Sendable {
         let target = Self.pulseGateBase + (square * Self.pulseGateDepth)
         smoothedPulseGain += pulseSmoothingCoefficient * (target - smoothedPulseGain)
         return smoothedPulseGain
+    }
+
+    private func nextLayeredPulseGain(at timelineTime: Double) -> Double {
+        pulseLayers.reduce(0) { partialResult, layer in
+            partialResult + layer.nextPulseGain(at: timelineTime)
+        }
     }
 
     private func advancePhase(_ phase: inout Double, frequency: Double) {
@@ -505,6 +512,52 @@ private final class ToneRenderState: @unchecked Sendable {
         data[baseIndex] = left
         if channelCount > 1 {
             data[baseIndex + 1] = right
+        }
+    }
+}
+
+private final class PulseLayerRenderState: @unchecked Sendable {
+    private static let twoPi = Double.pi * 2
+    private static let pulseGateBase = 0.5
+    private static let pulseGateDepth = 0.45
+    private static let pulseSmoothingFrequency = 32.0
+
+    private let sampleRate: Double
+    private let pulseSmoothingCoefficient: Double
+    private var rateTimeline: TimelineCursor
+    private var gainTimeline: TimelineCursor
+    private var pulsePhase = 0.0
+    private var smoothedPulseGain = pulseGateBase
+
+    init(
+        rateTimeline: [TimelinePoint],
+        gainTimeline: [TimelinePoint],
+        sampleRate: Double
+    ) {
+        self.sampleRate = max(1, sampleRate)
+        self.rateTimeline = TimelineCursor(points: rateTimeline)
+        self.gainTimeline = TimelineCursor(points: gainTimeline)
+        pulseSmoothingCoefficient = 1 - exp(
+            (-Self.twoPi * Self.pulseSmoothingFrequency) / self.sampleRate
+        )
+    }
+
+    func nextPulseGain(at timelineTime: Double) -> Double {
+        let mixGain = max(0, gainTimeline.value(at: timelineTime, fallback: 1))
+        let rate = max(0, rateTimeline.value(at: timelineTime, fallback: 0))
+        guard rate > 0 else { return Self.pulseGateBase * mixGain }
+
+        advancePhase(&pulsePhase, frequency: rate)
+        let square = pulsePhase < Double.pi ? 1.0 : -1.0
+        let target = Self.pulseGateBase + (square * Self.pulseGateDepth)
+        smoothedPulseGain += pulseSmoothingCoefficient * (target - smoothedPulseGain)
+        return smoothedPulseGain * mixGain
+    }
+
+    private func advancePhase(_ phase: inout Double, frequency: Double) {
+        phase += Self.twoPi * max(0, frequency) / sampleRate
+        if phase >= Self.twoPi {
+            phase.formTruncatingRemainder(dividingBy: Self.twoPi)
         }
     }
 }
@@ -558,12 +611,14 @@ private struct TimelineCursor {
 private struct NoiseGenerator {
     private var primaryRandom: XorShift32
     private var secondaryRandom: XorShift32
+    private var tertiaryRandom: XorShift32
     private var pink = PinkNoiseState()
     private var brown = BrownNoiseState()
 
     init(seed: UInt32) {
         primaryRandom = XorShift32(seed: seed)
         secondaryRandom = XorShift32(seed: seed ^ 0x9E37_79B9)
+        tertiaryRandom = XorShift32(seed: seed ^ 0x85EB_CA6B)
     }
 
     mutating func nextSample(type: NoiseType) -> Float {
@@ -577,7 +632,8 @@ private struct NoiseGenerator {
         case .mixed:
             let pinkSample = pink.next(white: primaryRandom.nextFloat())
             let brownSample = brown.next(white: secondaryRandom.nextFloat())
-            return max(-1, min(1, (pinkSample + brownSample) * 0.58))
+            let whiteSample = tertiaryRandom.nextFloat() * 0.42
+            return max(-1, min(1, (pinkSample + brownSample + whiteSample) * 0.42))
         }
     }
 }

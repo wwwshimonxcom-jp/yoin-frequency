@@ -6,6 +6,7 @@ struct ContentView: View {
     @ObservedObject var store: PlayerStore
     @StateObject private var musicController = MusicTransportController()
     @State private var isMusicPanelPresented = false
+    @State private var scrubPosition: TimeInterval?
 
     private let gold = Color(red: 0.88, green: 0.75, blue: 0.43)
     private let warmWhite = Color(red: 0.96, green: 0.94, blue: 0.89)
@@ -18,7 +19,6 @@ struct ContentView: View {
                 VStack(spacing: 18) {
                     header
                     nowPlayingCard
-                    listeningSection
                     presetSection
                     volumeSection
                     noiseSection
@@ -58,6 +58,9 @@ struct ContentView: View {
             }
         } message: {
             Text(store.errorMessage ?? "オーディオの設定を確認してください。")
+        }
+        .onChange(of: store.selectedPreset.id) { _, _ in
+            scrubPosition = nil
         }
     }
 
@@ -156,6 +159,10 @@ struct ContentView: View {
                     }
                 }
             }
+
+            if let duration = store.programDurationSeconds {
+                programProgress(duration: duration)
+            }
         }
         .padding(.vertical, 26)
         .padding(.horizontal, 18)
@@ -186,30 +193,6 @@ struct ContentView: View {
         }
     }
 
-    private var listeningSection: some View {
-        controlCard(title: "SOUND METHOD", systemImage: "waveform") {
-            VStack(spacing: 13) {
-                HStack(spacing: 10) {
-                    ForEach(ListeningMode.allCases) { mode in
-                        ListeningModeButton(
-                            mode: mode,
-                            isSelected: store.listeningMode == mode,
-                            accent: gold
-                        ) {
-                            store.selectListeningMode(mode)
-                        }
-                    }
-                }
-
-                Label("どちらもヘッドホン／スピーカーで再生できます", systemImage: "checkmark.circle.fill")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(warmWhite.opacity(0.62))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-            }
-        }
-    }
-
     private var volumeSection: some View {
         controlCard(title: "VOLUME", systemImage: "slider.horizontal.3") {
             VStack(spacing: 19) {
@@ -223,7 +206,7 @@ struct ContentView: View {
                 )
 
                 VolumeSlider(
-                    title: "Tone",
+                    title: "Frequency",
                     value: Binding(
                         get: { store.toneVolume },
                         set: { store.setToneVolume($0) }
@@ -312,7 +295,7 @@ struct ContentView: View {
 
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("\(playerStatusLabel) · \(store.listeningMode.displayName.uppercased())")
+                    Text(playerStatusLabel)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .tracking(1)
                         .foregroundStyle(gold.opacity(0.9))
@@ -386,6 +369,58 @@ struct ContentView: View {
         return String(format: "%02d:%02d", totalSeconds / 60, totalSeconds % 60)
     }
 
+    private func programProgress(duration: TimeInterval) -> some View {
+        let visibleElapsed = scrubPosition ?? store.programElapsedSeconds
+
+        return VStack(spacing: 9) {
+            HStack {
+                Text(store.selectedPreset.loop ? "\(store.programCycleIndex)周目" : "再生位置")
+                Spacer()
+                Text("\(formatProgramTime(visibleElapsed)) / \(formatProgramTime(duration))")
+                    .font(.system(.caption, design: .monospaced, weight: .medium))
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(warmWhite.opacity(0.58))
+
+            Slider(
+                value: Binding(
+                    get: { scrubPosition ?? store.programElapsedSeconds },
+                    set: { scrubPosition = min(duration, max(0, $0)) }
+                ),
+                in: 0...duration,
+                onEditingChanged: { isEditing in
+                    if isEditing {
+                        scrubPosition = store.programElapsedSeconds
+                    } else if let target = scrubPosition {
+                        store.seekProgram(to: target)
+                        scrubPosition = nil
+                    }
+                }
+            )
+            .tint(gold)
+            .disabled(store.isStopping)
+            .accessibilityLabel("ループ位置")
+            .accessibilityValue(
+                "\(store.programCycleIndex)周目、\(formatProgramTime(visibleElapsed))、全体\(formatProgramTime(duration))"
+            )
+            .accessibilityHint("左右に調整して再生位置を移動します")
+        }
+        .padding(.top, 2)
+    }
+
+    private func formatProgramTime(_ seconds: TimeInterval) -> String {
+        let total = max(0, Int(seconds.rounded()))
+        let hours = total / 3_600
+        let minutes = (total % 3_600) / 60
+        let remainder = total % 60
+
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, remainder)
+        }
+
+        return String(format: "%02d:%02d", minutes, remainder)
+    }
+
     private var playerStatusLabel: String {
         if store.isStopping {
             return "STOPPING"
@@ -445,58 +480,6 @@ private struct SelectionButton: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-private struct ListeningModeButton: View {
-    let mode: ListeningMode
-    let isSelected: Bool
-    let accent: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(mode.channelLabel)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                        .tracking(0.8)
-                    Spacer()
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 16, weight: .semibold))
-                }
-
-                Text(mode.displayName.uppercased())
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .tracking(1.1)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-
-                Text(mode.localizedName)
-                    .font(.subheadline.weight(.semibold))
-
-                Text(mode.summary)
-                    .font(.caption2)
-                    .opacity(0.64)
-                    .lineLimit(2)
-            }
-            .foregroundStyle(isSelected ? Color.black.opacity(0.8) : Color.white.opacity(0.78))
-            .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
-            .padding(14)
-            .background(
-                isSelected ? accent : Color.white.opacity(0.055),
-                in: RoundedRectangle(cornerRadius: 15, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .stroke(isSelected ? accent : Color.white.opacity(0.08), lineWidth: 1)
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("\(mode.localizedName)、\(mode.summary)")
-        .accessibilityValue(isSelected ? "選択中" : "")
-        .accessibilityHint("ヘッドホンとスピーカーのどちらでも再生できます")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
