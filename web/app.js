@@ -142,7 +142,7 @@
     },
     recovery: {
       name: "Recovery",
-      description: "体力回復",
+      description: "緊張をゆるめ、心身を休息・リフレッシュへ",
       left: RECOVERY_PITCH_TIMELINE[0].pitch,
       right: RECOVERY_PITCH_TIMELINE[0].pitch,
       difference: 0,
@@ -156,7 +156,7 @@
     },
     energy: {
       name: "Energy",
-      description: "エネルギー",
+      description: "目覚めや疲労後の活力・集中を整える",
       left: ENERGY_PITCH_TIMELINE[0].pitch,
       right: ENERGY_PITCH_TIMELINE[0].pitch,
       difference: 0,
