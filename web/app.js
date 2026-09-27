@@ -324,6 +324,32 @@
       toneVolume: 10,
       noiseVolume: 14
     },
+    recovery: {
+      name: "体力回復",
+      description: "モノラル音源・27分21秒",
+      left: null,
+      right: null,
+      difference: null,
+      audioSource: "./audio/recovery.m4a",
+      durationSeconds: 1641,
+      timerMinutes: 0,
+      noise: "pink",
+      toneVolume: 82,
+      noiseVolume: 0
+    },
+    energy: {
+      name: "エネルギー",
+      description: "モノラル音源・30分19秒",
+      left: null,
+      right: null,
+      difference: null,
+      audioSource: "./audio/energy.m4a",
+      durationSeconds: 1818.738667,
+      timerMinutes: 0,
+      noise: "pink",
+      toneVolume: 82,
+      noiseVolume: 0
+    },
     noiseOnly: {
       name: "Noise Only",
       description: "周波数なしでノイズだけ流すモード",
@@ -349,6 +375,8 @@
   const STORAGE_KEY = "yoin-frequency-settings-v1";
   const MASTER_VOLUME_CURVE = 1.15;
   const TONE_GAIN_MAX = 0.08;
+  const AUDIO_GAIN_MAX = 1.15;
+  const AUDIO_PRE_GAIN = 5;
   const NOISE_GAIN_MAX = 0.13;
   const SPEAKER_MODULATION_BASE = 0.56;
   const SPEAKER_MODULATION_DEPTH = 0.18;
@@ -402,6 +430,7 @@
     masterVolume: document.getElementById("masterVolume"),
     masterVolumeValue: document.getElementById("masterVolumeValue"),
     toneVolume: document.getElementById("toneVolume"),
+    toneVolumeLabel: document.getElementById("toneVolumeLabel"),
     toneVolumeValue: document.getElementById("toneVolumeValue"),
     noiseVolume: document.getElementById("noiseVolume"),
     noiseVolumeValue: document.getElementById("noiseVolumeValue"),
@@ -568,6 +597,10 @@
   }
 
   function getModeFrequencyLabel(mode) {
+    if (mode.audioSource) {
+      return `Mono audio / ${formatDurationSeconds(mode.durationSeconds)}`;
+    }
+
     if (mode.difference === null) {
       return `${formatNoiseName(mode.noise)} noise`;
     }
@@ -615,7 +648,7 @@
     state.toneVolume = MODES[modeKey].toneVolume;
     state.noiseVolume = MODES[modeKey].noiseVolume;
     state.noiseType = MODES[modeKey].noise;
-    if (MODES[modeKey].timerMinutes) {
+    if (typeof MODES[modeKey].timerMinutes === "number") {
       state.timerMinutes = MODES[modeKey].timerMinutes;
     }
     saveState();
@@ -750,6 +783,7 @@
     const noiseGain = context.createGain();
     const sources = [];
     const cleanupTasks = [];
+    let media = null;
 
     masterGain.gain.setValueAtTime(0, context.currentTime);
     toneGain.gain.setValueAtTime(0, context.currentTime);
@@ -758,6 +792,10 @@
     toneGain.connect(masterGain);
     noiseGain.connect(masterGain);
     masterGain.connect(context.destination);
+
+    if (mode.audioSource && state.toneVolume > 0) {
+      media = createMonoTrack(context, mode, toneGain, sources, cleanupTasks);
+    }
 
     if (mode.left !== null && mode.right !== null && state.toneVolume > 0) {
       if (state.listeningMode === "speaker") {
@@ -781,8 +819,67 @@
       toneGain,
       noiseGain,
       sources,
-      cleanupTasks
+      cleanupTasks,
+      media
     };
+  }
+
+  function createMonoTrack(context, mode, destination, sources, cleanupTasks) {
+    const media = new Audio(mode.audioSource);
+    const source = context.createMediaElementSource(media);
+    const preGain = context.createGain();
+    const compressor = context.createDynamicsCompressor();
+
+    media.preload = "metadata";
+    media.loop = false;
+    preGain.gain.setValueAtTime(AUDIO_PRE_GAIN, context.currentTime);
+    compressor.threshold.setValueAtTime(-36, context.currentTime);
+    compressor.knee.setValueAtTime(26, context.currentTime);
+    compressor.ratio.setValueAtTime(8, context.currentTime);
+    compressor.attack.setValueAtTime(0.004, context.currentTime);
+    compressor.release.setValueAtTime(0.22, context.currentTime);
+
+    source.connect(preGain);
+    preGain.connect(compressor);
+    compressor.connect(destination);
+
+    const finishPlayback = () => {
+      if (graph && graph.media === media) {
+        stopAudio(0.6);
+      }
+    };
+    media.addEventListener("ended", finishPlayback);
+
+    sources.push({
+      start() {
+        media.play().catch((error) => {
+          console.warn("YOIN frequency could not start the audio track.", error);
+          finishPlayback();
+        });
+      },
+      stop() {
+        media.pause();
+        media.currentTime = 0;
+      },
+      disconnect() {
+        [source, preGain, compressor].forEach((node) => {
+          try {
+            node.disconnect();
+          } catch {
+            // Ignore disconnect races during a quick mode change.
+          }
+        });
+      }
+    });
+
+    cleanupTasks.push(() => {
+      media.removeEventListener("ended", finishPlayback);
+      media.pause();
+      media.removeAttribute("src");
+      media.load();
+    });
+
+    return media;
   }
 
   function createHeadphoneTone(context, mode, destination, sources, cleanupTasks) {
@@ -1070,7 +1167,13 @@
   }
 
   function getToneGainValue() {
-    if (MODES[state.mode].left === null) {
+    const mode = MODES[state.mode];
+
+    if (mode.audioSource) {
+      return scaleGain(state.toneVolume, AUDIO_GAIN_MAX) * getMasterVolumeScale();
+    }
+
+    if (mode.left === null) {
       return 0;
     }
 
@@ -1118,7 +1221,8 @@
 
   function applyStateToView() {
     const mode = MODES[state.mode];
-    const isNoiseOnly = mode.left === null;
+    const isRecordedAudio = Boolean(mode.audioSource);
+    const isNoiseOnly = mode.left === null && !isRecordedAudio;
     const isSpeakerMode = state.listeningMode === "speaker";
 
     elements.body.classList.toggle("is-playing", state.isPlaying);
@@ -1126,7 +1230,14 @@
     elements.currentModeName.textContent = mode.name;
     elements.currentModeDescription.textContent = mode.description;
 
-    if (mode.pulseTimeline) {
+    if (isRecordedAudio) {
+      elements.primaryFrequencyLabel.textContent = "Source";
+      elements.secondaryFrequencyLabel.textContent = "Output";
+      elements.differenceFrequencyLabel.textContent = "Duration";
+      elements.leftFrequency.textContent = "Mono";
+      elements.rightFrequency.textContent = "Audio";
+      elements.differenceFrequency.textContent = formatDurationSeconds(mode.durationSeconds);
+    } else if (mode.pulseTimeline) {
       elements.primaryFrequencyLabel.textContent = mode.pitchTimeline ? "Pitch" : "Tone";
       elements.secondaryFrequencyLabel.textContent = "Output";
       elements.differenceFrequencyLabel.textContent = "Pulse";
@@ -1142,14 +1253,17 @@
       elements.differenceFrequency.textContent = isNoiseOnly ? "--" : formatHz(mode.difference);
     }
 
-    elements.noiseLabel.textContent = `${formatNoiseName(state.noiseType)} noise`;
+    elements.noiseLabel.textContent = isRecordedAudio ? "Mono audio" : `${formatNoiseName(state.noiseType)} noise`;
     elements.playbackStatus.textContent = state.isPlaying ? "再生中" : isStopping ? "停止中" : "停止中";
-    elements.headphoneStatus.textContent = isNoiseOnly
+    elements.headphoneStatus.textContent = isRecordedAudio
+      ? "モノラル"
+      : isNoiseOnly
       ? "スピーカー可"
       : isSpeakerMode ? "スピーカー用" : "イヤホン用";
     elements.playButton.disabled = state.isPlaying || isStopping;
     elements.stopButton.disabled = (!state.isPlaying && !graph) || isStopping;
     elements.toneVolume.disabled = isNoiseOnly;
+    elements.toneVolumeLabel.textContent = isRecordedAudio ? "Program" : "Frequency";
 
     document.querySelectorAll(".mode-button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
