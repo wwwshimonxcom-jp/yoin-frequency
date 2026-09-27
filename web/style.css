@@ -249,6 +249,7 @@ body.is-playing .breath-circle {
   line-height: 0.96;
   font-weight: 650;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .mode-description {
@@ -261,7 +262,7 @@ body.is-playing .breath-circle {
 
 .frequency-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
@@ -287,6 +288,44 @@ body.is-playing .breath-circle {
   color: var(--text);
   font-size: clamp(0.92rem, 4vw, 1.22rem);
   font-weight: 750;
+}
+
+.loop-progress {
+  position: relative;
+  z-index: 2;
+  margin-top: 18px;
+}
+
+.loop-progress-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 760;
+}
+
+.loop-progress-topline span:first-child {
+  color: var(--gold);
+}
+
+.loop-progress-topline span:last-child {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.loop-progress-slider {
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--gold);
+}
+
+.loop-progress-slider:disabled {
+  opacity: 0.45;
 }
 
 .panel {
@@ -361,7 +400,8 @@ body.is-playing .breath-circle {
 
 .primary-button,
 .secondary-button {
-  width: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 62px;
   border-radius: 8px;
   font-size: 1.05rem;
@@ -426,16 +466,11 @@ input[type="range"]:disabled {
 }
 
 .segmented-control {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.listening-control {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .timer-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .segmented-control button,
@@ -457,10 +492,6 @@ input[type="range"]:disabled {
   background: rgba(219, 190, 128, 0.13);
 }
 
-.listening-control button[aria-pressed="true"] {
-  background: linear-gradient(135deg, rgba(219, 190, 128, 0.16), rgba(108, 166, 255, 0.1));
-}
-
 .notice {
   margin-top: 16px;
   padding: 14px;
@@ -480,7 +511,7 @@ input[type="range"]:disabled {
   }
 
   .mode-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .mode-button {
@@ -492,7 +523,7 @@ input[type="range"]:disabled {
   }
 }
 
-@media (max-width: 390px) {
+@media (max-width: 520px) {
   .app-shell {
     padding-left: 14px;
     padding-right: 14px;
@@ -604,7 +635,7 @@ body.is-compact-ui .mode-description {
 }
 
 body.is-compact-ui .frequency-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -619,6 +650,19 @@ body.is-compact-ui .frequency-grid dt {
 
 body.is-compact-ui .frequency-grid dd {
   font-size: 0.82rem;
+}
+
+body.is-compact-ui .loop-progress {
+  margin-top: 8px;
+}
+
+body.is-compact-ui .loop-progress-topline {
+  margin-bottom: 5px;
+  font-size: 0.66rem;
+}
+
+body.is-compact-ui .loop-progress-slider {
+  height: 18px;
 }
 
 body.is-compact-ui .panel {
@@ -685,12 +729,8 @@ body.is-compact-ui .timer-grid {
   gap: 6px;
 }
 
-body.is-compact-ui .listening-control {
-  margin-bottom: 7px;
-}
-
 body.is-compact-ui .timer-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 body.is-compact-ui .segmented-control button,
@@ -743,10 +783,6 @@ body.is-compact-ui .notice {
   body.is-compact-ui .segmented-control button,
   body.is-compact-ui .timer-grid button {
     min-height: 30px;
-  }
-
-  body.is-compact-ui .listening-control {
-    margin-bottom: 5px;
   }
 
 }

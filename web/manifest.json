@@ -1,7 +1,7 @@
 {
   "name": "YOIN frequency",
   "short_name": "YOIN freq",
-  "description": "A simple binaural beat, noise, and timer web audio app.",
+  "description": "A speaker-only frequency and noise player.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
