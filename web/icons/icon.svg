@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">YOIN frequency icon</title>
+  <desc id="desc">A dark square icon with calm gold frequency rings.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#11182a"/>
+      <stop offset="0.55" stop-color="#070912"/>
+      <stop offset="1" stop-color="#05060b"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0.1" x2="0.9" y1="0" y2="1">
+      <stop offset="0" stop-color="#f0d99a"/>
+      <stop offset="0.55" stop-color="#dbc080"/>
+      <stop offset="1" stop-color="#7aa6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="148" fill="none" stroke="url(#ring)" stroke-width="12" opacity="0.9"/>
+  <circle cx="256" cy="256" r="94" fill="none" stroke="#dbc080" stroke-width="5" opacity="0.45"/>
+  <circle cx="256" cy="256" r="38" fill="#dbc080" opacity="0.9"/>
+  <path d="M143 259c34-51 54-51 88 0s54 51 88 0 54-51 88 0" fill="none" stroke="#f4f0e8" stroke-width="14" stroke-linecap="round" opacity="0.88"/>
+</svg>
