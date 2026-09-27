@@ -43,4 +43,11 @@ Xcodeで `ios/YOINFrequency.xcodeproj` を開きます。
 - Web版のプリセットは `web/app.js`、iOS版のプリセットは `ios/YOINFrequency/Resources/presets.json` で管理しています。
 - 録音の再分析結果を反映するときは、両方のプリセットを照合して更新します。
 
+## Web版の現在仕様
+
+- Web版はスピーカー向けのモノラル再生です。Business / Creative / Thoughts make thingsは、解析済みの2レイヤーPulseデータを使います。
+- Pink / Brown / White / Mixノイズと、ループ再生位置の操作に対応しています。
+- 体力回復とエネルギーは、`web/audio/`にあるモノラルAACをストリーミング再生します。PWAの初回キャッシュには含めません。
+- NetlifyのGitHub連携では、`main`へのpushでProduction deployが走ります。
+
 このアプリは医療目的のアプリではありません。最初は小さな音量で試してください。
