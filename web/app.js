@@ -6,13 +6,22 @@
     throw new Error("Business two-layer analysis data is unavailable.");
   }
   const RAW_MENU_DATA = window.YOIN_RAW_MENU_DATA;
+  const RECOVERY_ENERGY_DATA = window.YOIN_RECOVERY_ENERGY_DATA;
   const CREATIVE_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.creativeRaw;
   const THOUGHTS_RAW_DATA = RAW_MENU_DATA && RAW_MENU_DATA.thoughtsMakeThingsRaw;
+  const RECOVERY_DATA = RECOVERY_ENERGY_DATA && RECOVERY_ENERGY_DATA.recovery;
+  const ENERGY_DATA = RECOVERY_ENERGY_DATA && RECOVERY_ENERGY_DATA.energy;
   if (!CREATIVE_RAW_DATA || !Array.isArray(CREATIVE_RAW_DATA.pulseLayers) || CREATIVE_RAW_DATA.pulseLayers.length !== 2) {
     throw new Error("Creative two-layer analysis data is unavailable.");
   }
   if (!THOUGHTS_RAW_DATA || !Array.isArray(THOUGHTS_RAW_DATA.pulseLayers) || THOUGHTS_RAW_DATA.pulseLayers.length !== 2) {
     throw new Error("Thoughts make things two-layer analysis data is unavailable.");
+  }
+  if (!RECOVERY_DATA || !Array.isArray(RECOVERY_DATA.pulseLayers) || RECOVERY_DATA.pulseLayers.length !== 2) {
+    throw new Error("Recovery two-layer analysis data is unavailable.");
+  }
+  if (!ENERGY_DATA || !Array.isArray(ENERGY_DATA.pulseLayers) || ENERGY_DATA.pulseLayers.length !== 2) {
+    throw new Error("Energy two-layer analysis data is unavailable.");
   }
 
   const BUSINESS_SECONDS = BUSINESS_DATA.durationSeconds;
@@ -27,6 +36,14 @@
   const THOUGHTS_RAW_PULSE_LAYERS = THOUGHTS_RAW_DATA.pulseLayers;
   const THOUGHTS_RAW_PULSE_TIMELINE = THOUGHTS_RAW_PULSE_LAYERS[0].rateTimeline;
   const THOUGHTS_RAW_PITCH_TIMELINE = THOUGHTS_RAW_DATA.originalPitchTimeline;
+  const RECOVERY_SECONDS = RECOVERY_DATA.durationSeconds;
+  const RECOVERY_PULSE_LAYERS = RECOVERY_DATA.pulseLayers;
+  const RECOVERY_PULSE_TIMELINE = RECOVERY_PULSE_LAYERS[0].rateTimeline;
+  const RECOVERY_PITCH_TIMELINE = RECOVERY_DATA.originalPitchTimeline;
+  const ENERGY_SECONDS = ENERGY_DATA.durationSeconds;
+  const ENERGY_PULSE_LAYERS = ENERGY_DATA.pulseLayers;
+  const ENERGY_PULSE_TIMELINE = ENERGY_PULSE_LAYERS[0].rateTimeline;
+  const ENERGY_PITCH_TIMELINE = ENERGY_DATA.originalPitchTimeline;
   const DEFAULT_TONE_VOLUME = 50;
   const DEFAULT_NOISE_VOLUME = 0;
 
@@ -123,6 +140,34 @@
       toneVolume: DEFAULT_TONE_VOLUME,
       noiseVolume: DEFAULT_NOISE_VOLUME
     },
+    recovery: {
+      name: "Recovery",
+      description: "体力回復",
+      left: RECOVERY_PITCH_TIMELINE[0].pitch,
+      right: RECOVERY_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: RECOVERY_PITCH_TIMELINE,
+      pulseTimeline: RECOVERY_PULSE_TIMELINE,
+      pulseLayers: RECOVERY_PULSE_LAYERS,
+      durationSeconds: RECOVERY_SECONDS,
+      noise: "brown",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
+    energy: {
+      name: "Energy",
+      description: "エネルギー",
+      left: ENERGY_PITCH_TIMELINE[0].pitch,
+      right: ENERGY_PITCH_TIMELINE[0].pitch,
+      difference: 0,
+      pitchTimeline: ENERGY_PITCH_TIMELINE,
+      pulseTimeline: ENERGY_PULSE_TIMELINE,
+      pulseLayers: ENERGY_PULSE_LAYERS,
+      durationSeconds: ENERGY_SECONDS,
+      noise: "pink",
+      toneVolume: DEFAULT_TONE_VOLUME,
+      noiseVolume: DEFAULT_NOISE_VOLUME
+    },
     noiseOnly: {
       name: "Noise Only",
       description: "周波数なしでノイズだけ流すモード",
@@ -148,6 +193,8 @@
     "business",
     "creative",
     "thoughtsMakeThings",
+    "recovery",
+    "energy",
     "schumann",
     "zone528",
     "focus",

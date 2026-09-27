@@ -1,31 +1,21 @@
 # YOIN Frequency
 
-YOIN Frequencyは、音楽を聴きながら周波数音やホワイト・ピンク・ブラウンノイズを重ねて使うためのアプリです。
-
-このリポジトリには、現在公開中のWeb版と、SwiftUIで開発しているiPhone・iPad版が入っています。
-
-## 使いたい版を選ぶ
+YOIN Frequencyは、周波数音とノイズを再生するアプリです。このリポジトリには公開中のWeb版と、SwiftUIで開発中のiPhone・iPad版が入っています。
 
 | 種類 | 状態 | 入口 |
 | --- | --- | --- |
 | Web版（PWA） | 公開中 | [Web版を開く](https://yoin-frequency.netlify.app) / [Web版の説明](./web/README.md) |
-| iPhone・iPad版 | Phase 1 開発中 | [iOS版の説明](./ios/README.md) / [実機テスト項目](./ios/DEVICE_TEST_CHECKLIST.md) |
+| iPhone・iPad版 | Phase 1 開発中 | [iOS版の説明](./ios/README.md) |
 
-## フォルダ構成
+## Web版
 
-```text
-yoin-frequency/
-├── web/          Web版（HTML / CSS / JavaScript / PWA）
-├── ios/          iPhone・iPad版（SwiftUI / AVAudioEngine）
-├── netlify.toml  Web版の公開設定
-└── README.md     この総合案内
-```
+Web版は`web/`にあり、Netlifyはこのフォルダを公開します。`main`へプッシュするとProduction deployが走ります。
 
-Web版とiOS版は、それぞれのフォルダ内だけで起動・開発できます。
+Web版はスピーカー向けのモノラル再生です。Business、Creative、Thoughts make things、Recovery、Energyは、解析済みの可変Pitchと2レイヤーPulseを使います。Pitchは音の高さ、Pulseは「トトト」の間隔です。元の録音ファイルはアプリへ含めません。
 
-## すぐに開く
+Recoveryは29分50秒、Energyは27分50秒を1周として、無制限時は先頭からループします。再生位置バーでは周回数と現在位置を確認・操作できます。
 
-### Web版
+## ローカル起動
 
 ```bash
 python3 -m http.server 8000 --directory web
@@ -33,21 +23,4 @@ python3 -m http.server 8000 --directory web
 
 ブラウザで `http://localhost:8000` を開きます。
 
-### iPhone・iPad版
-
-Xcodeで `ios/YOINFrequency.xcodeproj` を開きます。
-
-## 公開とデータ管理
-
-- Netlifyは `web/` だけを公開します。公開URLは従来どおりです。
-- Web版のプリセットは `web/app.js`、iOS版のプリセットは `ios/YOINFrequency/Resources/presets.json` で管理しています。
-- 録音の再分析結果を反映するときは、両方のプリセットを照合して更新します。
-
-## Web版の現在仕様
-
-- Web版はスピーカー向けのモノラル再生です。Business / Creative / Thoughts make thingsは、解析済みの2レイヤーPulseデータを使います。
-- Pink / Brown / White / Mixノイズと、ループ再生位置の操作に対応しています。
-- 体力回復とエネルギーは、`web/audio/`にあるモノラルAACをストリーミング再生します。PWAの初回キャッシュには含めません。
-- NetlifyのGitHub連携では、`main`へのpushでProduction deployが走ります。
-
-このアプリは医療目的のアプリではありません。最初は小さな音量で試してください。
+このアプリは医療目的ではありません。小さめの音量で使用し、体調に違和感がある場合は使用を中止してください。
