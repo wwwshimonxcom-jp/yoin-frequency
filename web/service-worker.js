@@ -1,4 +1,4 @@
-const CACHE_NAME = "yoin-frequency-v29";
+const CACHE_NAME = "yoin-frequency-v28";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -34,10 +34,6 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
-    return;
-  }
-
-  if (new URL(event.request.url).pathname.includes("/audio/")) {
     return;
   }
 
